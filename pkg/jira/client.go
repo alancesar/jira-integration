@@ -85,6 +85,7 @@ func DefaultSearchRequest(jql string, startAt int) SearchRequest {
 			"summary",
 			"status",
 			"assignee",
+			"reporter",
 			"priority",
 			"issuetype",
 			"fixVersions",

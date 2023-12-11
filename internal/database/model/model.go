@@ -68,6 +68,7 @@ type (
 		FixVersions []FixVersion `gorm:"many2many:issue_fix_versions"`
 		Labels      datatypes.JSON
 		Assignee    *string
+		Reporter    string
 		StoryPoints *uint
 		NewProjects *string
 		Allocation  *string
@@ -90,6 +91,7 @@ func NewIssue(i issue.Issue) *Issue {
 		Priority:    NewPriority(i.Priority),
 		IssueTypeID: i.Type.ID,
 		IssueType:   NewIssueType(i.Type),
+		Reporter:    i.Reporter,
 		Sprints:     NewSprints(i.Sprints),
 		FixVersions: NewFixVersions(i.FixVersions),
 		Labels:      labels,

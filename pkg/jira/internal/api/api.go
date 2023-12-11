@@ -59,7 +59,7 @@ type (
 		ColorName string `json:"colorName"`
 	}
 
-	Assignee struct {
+	Account struct {
 		Self         string            `json:"self"`
 		AccountID    string            `json:"accountId"`
 		EmailAddress string            `json:"emailAddress"`
@@ -97,7 +97,8 @@ type (
 		Sprints     []Sprint     `json:"customfield_10020,omitempty"`
 		FixVersions []FixVersion `json:"fixVersions,omitempty"`
 		Labels      []string     `json:"labels,omitempty"`
-		Assignee    Assignee     `json:"assignee,omitempty"`
+		Assignee    Account      `json:"assignee"`
+		Reporter    Account      `json:"reporter"`
 		StoryPoints float32      `json:"customfield_10025,omitempty"`
 		NewProjects NewProjects  `json:"customfield_10444,omitempty"`
 		Allocation  Field        `json:"customfield_10427,omitempty"`
@@ -161,6 +162,7 @@ func (i Issue) ToDomain() issue.Issue {
 		FixVersions: nil,
 		Labels:      i.Fields.Labels,
 		Assignee:    i.Fields.Assignee.EmailAddress,
+		Reporter:    i.Fields.Reporter.EmailAddress,
 		StoryPoints: uint(i.Fields.StoryPoints),
 		NewProjects: i.Fields.NewProjects.JoinValues(),
 		Allocation:  i.Fields.Allocation.Value,

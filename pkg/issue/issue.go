@@ -50,6 +50,7 @@ type (
 		FixVersions []FixVersion
 		Labels      []string
 		Assignee    string
+		Reporter    string
 		StoryPoints uint
 		NewProjects string
 		Allocation  string
