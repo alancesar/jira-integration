@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"fmt"
 	"gorm.io/gorm"
 	"jira-integration/internal/database/model"
 	"jira-integration/pkg/issue"
@@ -32,10 +31,6 @@ func NewSQLite(db *gorm.DB) *SQLite {
 }
 
 func (l SQLite) SaveIssue(ctx context.Context, i issue.Issue) error {
-	if i.Key == "MAQ-4013" {
-		fmt.Println(i)
-	}
-
 	var exists bool
 	if err := l.db.Model(&model.Issue{}).
 		Select("COUNT(*) > 0").
