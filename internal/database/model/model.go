@@ -9,6 +9,16 @@ import (
 )
 
 type (
+	Account struct {
+		ID           string `gorm:"primarykey"`
+		EmailAddress string
+		AvatarURL    string
+		DisplayName  string
+		Active       bool
+		TimeZone     string
+		AccountType  string
+	}
+
 	Sprint struct {
 		ID          uint `gorm:"primarykey"`
 		Name        string
@@ -67,8 +77,10 @@ type (
 		Sprints     []Sprint     `gorm:"many2many:issue_sprints"`
 		FixVersions []FixVersion `gorm:"many2many:issue_fix_versions"`
 		Labels      datatypes.JSON
-		Assignee    *string
-		Reporter    string
+		AssigneeID  *string
+		Assignee    *Account
+		ReporterID  string
+		Reporter    Account
 		StoryPoints *uint
 		NewProjects *string
 		Allocation  *string
@@ -91,7 +103,8 @@ func NewIssue(i issue.Issue) *Issue {
 		Priority:    NewPriority(i.Priority),
 		IssueTypeID: i.Type.ID,
 		IssueType:   NewIssueType(i.Type),
-		Reporter:    i.Reporter,
+		ReporterID:  i.Reporter.ID,
+		Reporter:    NewAccount(i.Reporter),
 		Sprints:     NewSprints(i.Sprints),
 		FixVersions: NewFixVersions(i.FixVersions),
 		Labels:      labels,
@@ -101,8 +114,10 @@ func NewIssue(i issue.Issue) *Issue {
 		UpdatedAt:   i.UpdatedAt,
 	}
 
-	if i.Assignee != "" {
-		output.Assignee = &i.Assignee
+	if i.Assignee != nil {
+		assignee := NewAccount(*i.Assignee)
+		output.AssigneeID = &assignee.ID
+		output.Assignee = &assignee
 	}
 
 	if i.Parent != nil {
@@ -184,6 +199,18 @@ func NewFixVersions(fvs []issue.FixVersion) []FixVersion {
 	}
 
 	return output
+}
+
+func NewAccount(a issue.Account) Account {
+	return Account{
+		ID:           a.ID,
+		EmailAddress: a.EmailAddress,
+		AvatarURL:    a.AvatarURL,
+		DisplayName:  a.DisplayName,
+		Active:       a.Active,
+		TimeZone:     a.TimeZone,
+		AccountType:  a.AccountType,
+	}
 }
 
 func uintToPointer(value uint) *uint {

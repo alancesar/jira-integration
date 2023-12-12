@@ -59,15 +59,17 @@ type (
 		ColorName string `json:"colorName"`
 	}
 
+	AvatarURLs map[string]string
+
 	Account struct {
-		Self         string            `json:"self"`
-		AccountID    string            `json:"accountId"`
-		EmailAddress string            `json:"emailAddress"`
-		AvatarURLs   map[string]string `json:"avatarUrls"`
-		DisplayName  string            `json:"displayName"`
-		Active       bool              `json:"active"`
-		TimeZone     string            `json:"timeZone"`
-		AccountType  string            `json:"accountType"`
+		Self         string     `json:"self"`
+		AccountID    string     `json:"accountId"`
+		EmailAddress string     `json:"emailAddress"`
+		AvatarURLs   AvatarURLs `json:"avatarUrls"`
+		DisplayName  string     `json:"displayName"`
+		Active       bool       `json:"active"`
+		TimeZone     string     `json:"timeZone"`
+		AccountType  string     `json:"accountType"`
 	}
 
 	Priority struct {
@@ -97,7 +99,7 @@ type (
 		Sprints     []Sprint     `json:"customfield_10020,omitempty"`
 		FixVersions []FixVersion `json:"fixVersions,omitempty"`
 		Labels      []string     `json:"labels,omitempty"`
-		Assignee    Account      `json:"assignee"`
+		Assignee    *Account     `json:"assignee,omitempty"`
 		Reporter    Account      `json:"reporter"`
 		StoryPoints float32      `json:"customfield_10025,omitempty"`
 		NewProjects NewProjects  `json:"customfield_10444,omitempty"`
@@ -137,6 +139,12 @@ func (s SearchResponse) ToDomain() search.Response {
 }
 
 func (i Issue) ToDomain() issue.Issue {
+	var assignee *issue.Account
+	if i.Fields.Assignee != nil {
+		a := i.Fields.Assignee.ToDomain()
+		assignee = &a
+	}
+
 	output := issue.Issue{
 		ID:      internal.ParseStringToUint(i.ID),
 		Key:     i.Key,
@@ -161,8 +169,8 @@ func (i Issue) ToDomain() issue.Issue {
 		},
 		FixVersions: nil,
 		Labels:      i.Fields.Labels,
-		Assignee:    i.Fields.Assignee.EmailAddress,
-		Reporter:    i.Fields.Reporter.EmailAddress,
+		Assignee:    assignee,
+		Reporter:    i.Fields.Reporter.ToDomain(),
 		StoryPoints: uint(i.Fields.StoryPoints),
 		NewProjects: i.Fields.NewProjects.JoinValues(),
 		Allocation:  i.Fields.Allocation.Value,
@@ -232,6 +240,29 @@ func (f FixVersion) ToDomain() issue.FixVersion {
 		Archived:    f.Archived,
 		Released:    f.Released,
 		ReleaseDate: time.Time(f.ReleaseDate),
+	}
+}
+
+func (au AvatarURLs) Larger() string {
+	orderedKeys := []string{"48x48", "32x32", "24x24", "16x16"}
+	for _, key := range orderedKeys {
+		if avatar, ok := au[key]; ok {
+			return avatar
+		}
+	}
+
+	return ""
+}
+
+func (a Account) ToDomain() issue.Account {
+	return issue.Account{
+		ID:           a.AccountID,
+		EmailAddress: a.EmailAddress,
+		AvatarURL:    a.AvatarURLs.Larger(),
+		DisplayName:  a.DisplayName,
+		Active:       a.Active,
+		TimeZone:     a.TimeZone,
+		AccountType:  a.AccountType,
 	}
 }
 

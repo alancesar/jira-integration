@@ -121,7 +121,7 @@ func TestClient_Search(t *testing.T) {
 						},
 						Labels:      []string{"Some Label", "Another Label"},
 						StoryPoints: 3,
-						Assignee:    "some.user@bexsbanco.com.br",
+						//Assignee:    "some.user@bexsbanco.com.br",
 						NewProjects: "Maquininha - FXaaS",
 						Allocation:  "Operação",
 						CreatedAt:   internal.MustParseTimeRFC3339WithTimezone("2023-04-12T14:00:00.0-0300"),

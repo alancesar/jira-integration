@@ -38,6 +38,16 @@ type (
 		Name string
 	}
 
+	Account struct {
+		ID           string
+		EmailAddress string
+		AvatarURL    string
+		DisplayName  string
+		Active       bool
+		TimeZone     string
+		AccountType  string
+	}
+
 	Issue struct {
 		ID          uint
 		Key         string
@@ -49,8 +59,8 @@ type (
 		Sprints     []sprint.Sprint
 		FixVersions []FixVersion
 		Labels      []string
-		Assignee    string
-		Reporter    string
+		Assignee    *Account
+		Reporter    Account
 		StoryPoints uint
 		NewProjects string
 		Allocation  string

@@ -71,14 +71,14 @@ func main() {
 	//	}
 	//}
 	//
-	//boardID := 66
-	//sprints := client.StreamSprints(boardID)
-	//for sprint := range sprints {
-	//	fmt.Println("fetching sprint", sprint.Name)
-	//	if err := db.SaveSprint(ctx, sprint); err != nil {
-	//		log.Fatalln(err)
-	//	}
-	//}
+	boardID := 66
+	sprints := client.StreamSprints(boardID)
+	for sprint := range sprints {
+		fmt.Println("fetching sprint", sprint.Name)
+		if err := db.SaveSprint(ctx, sprint); err != nil {
+			log.Fatalln(err)
+		}
+	}
 	//
 	//fixVersions := client.StreamFixVersions(boardID)
 	//for fixVersion := range fixVersions {
