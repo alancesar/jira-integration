@@ -1,17 +1,6 @@
 version: '3'
 
 services:
-  mongo:
-    image: mongo:6.0.9
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: Pa55w0rd
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb:/data/db
-
   postgres:
     image: postgres:16.1
     environment:
