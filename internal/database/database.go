@@ -17,11 +17,13 @@ type (
 
 func NewSQLite(db *gorm.DB) *SQLite {
 	_ = db.AutoMigrate(
+		&model.Project{},
 		&model.StatusCategory{},
+		&model.Status{},
+		&model.Resolution{},
 		&model.FixVersion{},
 		&model.Priority{},
 		&model.IssueType{},
-		&model.Status{},
 		&model.Sprint{},
 		&model.Issue{},
 	)
@@ -48,13 +50,13 @@ func (l SQLite) SaveIssue(ctx context.Context, i issue.Issue) error {
 }
 
 func (l SQLite) GetLastUpdate(ctx context.Context) (time.Time, error) {
-	var rawUpdatedAt string
-	tx := l.db.WithContext(ctx).Raw(`select max(updated_at) from issues`).Scan(&rawUpdatedAt)
+	var updatedAt time.Time
+	tx := l.db.WithContext(ctx).Raw(`select max(updated_at) from issues`).Scan(&updatedAt)
 	if tx.Error != nil {
 		return time.Time{}, tx.Error
 	}
 
-	return time.Parse("2006-01-02 15:04:05.999-07:00", rawUpdatedAt)
+	return updatedAt, nil
 }
 
 func (l SQLite) SaveIssueType(ctx context.Context, it issue.Type) error {

@@ -38,6 +38,12 @@ type (
 		ReleaseDate time.Time
 	}
 
+	Project struct {
+		ID   uint `gorm:"primarykey"`
+		Key  string
+		Name string
+	}
+
 	Status struct {
 		ID               uint `gorm:"primarykey"`
 		Name             string
@@ -48,6 +54,12 @@ type (
 	StatusCategory struct {
 		ID   uint `gorm:"primarykey"`
 		Name string
+	}
+
+	Resolution struct {
+		ID          uint `gorm:"primarykey"`
+		Name        string
+		Description string
 	}
 
 	Priority struct {
@@ -63,29 +75,36 @@ type (
 	}
 
 	Issue struct {
-		ID          uint `gorm:"primarykey"`
-		Key         string
-		Summary     string
-		StatusID    uint
-		Status      Status
-		PriorityID  uint
-		Priority    Priority
-		IssueTypeID uint
-		IssueType   IssueType
-		ParentID    *uint
-		Parent      *Issue
-		Sprints     []Sprint     `gorm:"many2many:issue_sprints"`
-		FixVersions []FixVersion `gorm:"many2many:issue_fix_versions"`
-		Labels      datatypes.JSON
-		AssigneeID  *string
-		Assignee    *Account
-		ReporterID  string
-		Reporter    Account
-		StoryPoints *uint
-		NewProjects *string
-		Allocation  *string
-		CreatedAt   time.Time `gorm:"autoCreateTime:false"`
-		UpdatedAt   time.Time `gorm:"autoUpdateTime:false"`
+		ID           uint `gorm:"primarykey"`
+		Key          string
+		Summary      string
+		Project      Project
+		ProjectID    uint
+		StatusID     uint
+		Resolution   *Resolution
+		ResolutionID *uint
+		Status       Status
+		PriorityID   uint
+		Priority     Priority
+		IssueTypeID  uint
+		IssueType    IssueType
+		ParentID     *uint
+		Parent       *Issue
+		Sprints      []Sprint     `gorm:"many2many:issue_sprints"`
+		FixVersions  []FixVersion `gorm:"many2many:issue_fix_versions"`
+		Labels       datatypes.JSON
+		AssigneeID   *string
+		Assignee     *Account
+		ReporterID   string
+		Reporter     Account
+		StoryPoints  *uint
+		NewProjects  *string
+		Allocation   *string
+		TimeSpent    int
+		Squad        *string
+		System       *string
+		CreatedAt    time.Time `gorm:"autoCreateTime:false"`
+		UpdatedAt    time.Time `gorm:"autoUpdateTime:false"`
 	}
 )
 
@@ -96,22 +115,33 @@ func NewIssue(i issue.Issue) *Issue {
 		ID:          i.ID,
 		Key:         i.Key,
 		Summary:     i.Summary,
-		StoryPoints: uintToPointer(i.StoryPoints),
+		Project:     NewProject(i.Project),
+		ProjectID:   i.Project.ID,
 		StatusID:    i.Status.ID,
 		Status:      NewStatus(i.Status),
 		PriorityID:  i.Priority.ID,
 		Priority:    NewPriority(i.Priority),
 		IssueTypeID: i.Type.ID,
 		IssueType:   NewIssueType(i.Type),
-		ReporterID:  i.Reporter.ID,
-		Reporter:    NewAccount(i.Reporter),
 		Sprints:     NewSprints(i.Sprints),
 		FixVersions: NewFixVersions(i.FixVersions),
 		Labels:      labels,
+		ReporterID:  i.Reporter.ID,
+		Reporter:    NewAccount(i.Reporter),
+		StoryPoints: uintToPointer(i.StoryPoints),
 		NewProjects: stringToPointer(i.NewProjects),
 		Allocation:  stringToPointer(i.Allocation),
+		TimeSpent:   i.TimeSpent,
 		CreatedAt:   i.CreatedAt,
 		UpdatedAt:   i.UpdatedAt,
+	}
+
+	if i.System != nil {
+		output.System = i.System
+	}
+
+	if i.Squad != nil {
+		output.Squad = i.Squad
 	}
 
 	if i.Assignee != nil {
@@ -125,7 +155,21 @@ func NewIssue(i issue.Issue) *Issue {
 		output.ParentID = uintToPointer(i.Parent.ID)
 	}
 
+	if i.Resolution != nil {
+		resolution := NewResolution(*i.Resolution)
+		output.Resolution = &resolution
+		output.ResolutionID = &resolution.ID
+	}
+
 	return output
+}
+
+func NewProject(p issue.Project) Project {
+	return Project{
+		ID:   p.ID,
+		Key:  p.Key,
+		Name: p.Name,
+	}
 }
 
 func NewStatus(s issue.Status) Status {
@@ -134,6 +178,14 @@ func NewStatus(s issue.Status) Status {
 		Name:             s.Name,
 		StatusCategoryID: s.Category.ID,
 		StatusCategory:   NewStatusCategory(s.Category),
+	}
+}
+
+func NewResolution(r issue.Resolution) Resolution {
+	return Resolution{
+		ID:          r.ID,
+		Name:        r.Name,
+		Description: r.Description,
 	}
 }
 

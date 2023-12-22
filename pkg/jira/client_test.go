@@ -2,13 +2,13 @@ package jira
 
 import (
 	"jira-integration/pkg/issue"
-	"jira-integration/pkg/jira/internal"
 	"jira-integration/pkg/jira/internal/mock"
 	"jira-integration/pkg/search"
 	"jira-integration/pkg/sprint"
 	"net/http"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestClient_Search(t *testing.T) {
@@ -96,17 +96,17 @@ func TestClient_Search(t *testing.T) {
 								Name:        "Sprint 1",
 								State:       "closed",
 								Goal:        "Finish some big item",
-								StartedAt:   internal.MustParseTimeRFC3339("2023-03-20T15:00:00.0Z"),
-								EndedAt:     internal.MustParseTimeRFC3339("2023-03-30T21:00:00.0Z"),
-								CompletedAt: internal.MustParseTimeRFC3339("2023-03-30T21:00:00.0Z"),
+								StartedAt:   time.Date(2023, 3, 20, 15, 0, 0, 0, time.UTC),
+								EndedAt:     time.Date(2023, 3, 30, 21, 0, 0, 0, time.UTC),
+								CompletedAt: time.Date(2023, 3, 30, 21, 0, 0, 0, time.UTC),
 							},
 							{
 								ID:        2,
 								Name:      "Sprint 2",
 								State:     "active",
 								Goal:      "Finish another big item",
-								StartedAt: internal.MustParseTimeRFC3339("2023-04-03T15:00:00.0Z"),
-								EndedAt:   internal.MustParseTimeRFC3339("2023-04-13T21:00:00.0Z"),
+								StartedAt: time.Date(2023, 4, 3, 15, 0, 0, 0, time.UTC),
+								EndedAt:   time.Date(2023, 4, 13, 21, 0, 0, 0, time.UTC),
 							},
 						},
 						FixVersions: []issue.FixVersion{
@@ -114,18 +114,26 @@ func TestClient_Search(t *testing.T) {
 								ID:          123,
 								Name:        "2023 - Q1",
 								Description: "Release 2023/Q1",
-								ReleaseDate: internal.MustParseTime("2006-01-02", "2023-03-31"),
+								ReleaseDate: mustParseTime("2006-01-02", "2023-03-31"),
 								Archived:    false,
 								Released:    false,
 							},
 						},
 						Labels:      []string{"Some Label", "Another Label"},
 						StoryPoints: 3,
-						//Assignee:    "some.user@bexsbanco.com.br",
+						Assignee: &issue.Account{
+							ID:           "abc123",
+							EmailAddress: "some.user@bexsbanco.com.br",
+							AvatarURL:    "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/abc123/efg456/48",
+							DisplayName:  "Some User",
+							Active:       true,
+							TimeZone:     "America/Sao_Paulo",
+							AccountType:  "atlassian",
+						},
 						NewProjects: "Maquininha - FXaaS",
 						Allocation:  "Operação",
-						CreatedAt:   internal.MustParseTimeRFC3339WithTimezone("2023-04-12T14:00:00.0-0300"),
-						UpdatedAt:   internal.MustParseTimeRFC3339WithTimezone("2023-04-13T16:00:00.0-0300"),
+						CreatedAt:   mustParseTime("2006-01-02T15:04:05.999-0700", "2023-04-12T14:00:00.0-0300"),
+						UpdatedAt:   mustParseTime("2006-01-02T15:04:05.999-0700", "2023-04-13T16:00:00.0-0300"),
 					},
 				},
 			},
@@ -147,4 +155,9 @@ func TestClient_Search(t *testing.T) {
 			}
 		})
 	}
+}
+
+func mustParseTime(layout, value string) time.Time {
+	parsed, _ := time.Parse(layout, value)
+	return parsed
 }
