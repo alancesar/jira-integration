@@ -38,6 +38,7 @@ type (
 
 	Client struct {
 		credentials Credentials
+		boardID     int
 		httpClient  *http.Client
 	}
 
@@ -57,7 +58,7 @@ type (
 	}
 )
 
-func NewClient(credentials Credentials, client *http.Client) *Client {
+func NewClient(boardID int, credentials Credentials, client *http.Client) *Client {
 	transport := client.Transport
 	if transport == nil {
 		transport = http.DefaultTransport
@@ -66,6 +67,7 @@ func NewClient(credentials Credentials, client *http.Client) *Client {
 	basicAuthRoundTripper := internal.NewBasicAuthRoundTripper(credentials.Username, credentials.Password, transport)
 
 	return &Client{
+		boardID:     boardID,
 		credentials: credentials,
 		httpClient: &http.Client{
 			Transport: basicAuthRoundTripper,
@@ -177,14 +179,14 @@ func (c Client) GetIssueTypes() ([]issue.Type, error) {
 	return output, nil
 }
 
-func (c Client) StreamSprints(boardID int) <-chan sprint.Sprint {
-	baseURL := fmt.Sprintf("%s/board/%d/sprint", jiraAgileAPIBasePath, boardID)
+func (c Client) StreamSprints() <-chan sprint.Sprint {
+	baseURL := fmt.Sprintf("%s/board/%d/sprint", jiraAgileAPIBasePath, c.boardID)
 	streamer := NewStreamer[sprint.Sprint, agile.Sprint](c.httpClient)
 	return streamer.Stream(baseURL)
 }
 
-func (c Client) StreamFixVersions(boardID int) <-chan issue.FixVersion {
-	baseURL := fmt.Sprintf("%s/board/%d/version", jiraAgileAPIBasePath, boardID)
+func (c Client) StreamFixVersions() <-chan issue.FixVersion {
+	baseURL := fmt.Sprintf("%s/board/%d/version", jiraAgileAPIBasePath, c.boardID)
 	streamer := NewStreamer[issue.FixVersion, agile.FixVersion](c.httpClient)
 	return streamer.Stream(baseURL)
 }

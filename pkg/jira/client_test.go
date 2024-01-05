@@ -142,7 +142,7 @@ func TestClient_Search(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := NewClient(Credentials{}, &http.Client{
+			c := NewClient(123, Credentials{}, &http.Client{
 				Transport: tt.fields.roundTripper,
 			})
 			got, err := c.Search(tt.args.params)
