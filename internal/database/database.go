@@ -33,16 +33,9 @@ func NewSQLite(db *gorm.DB) *SQLite {
 }
 
 func (l SQLite) SaveIssue(ctx context.Context, i issue.Issue) error {
-	var exists bool
-	if err := l.db.Model(&model.Issue{}).
-		Select("COUNT(*) > 0").
-		Where("id = ?", i.ID).
-		Find(&exists).
-		Error; err != nil {
+	if exists, err := l.exists(ctx, i); err != nil {
 		return err
-	}
-
-	if exists {
+	} else if exists {
 		return l.updateIssue(ctx, i)
 	}
 
@@ -83,6 +76,17 @@ func (l SQLite) SaveFixVersion(ctx context.Context, fv issue.FixVersion) error {
 	return tx.Error
 }
 
+func (l SQLite) exists(ctx context.Context, i issue.Issue) (bool, error) {
+	var exists bool
+	tx := l.db.Model(&model.Issue{}).
+		WithContext(ctx).
+		Select("count(*) > 0").
+		Where("id = ?", i.ID).
+		Find(&exists)
+
+	return exists, tx.Error
+}
+
 func (l SQLite) insertIssue(ctx context.Context, i issue.Issue) error {
 	m := model.NewIssue(i)
 	tx := l.db.Omit("Parent").WithContext(ctx).Create(&m)
@@ -95,6 +99,7 @@ func (l SQLite) updateIssue(ctx context.Context, i issue.Issue) error {
 	if err := l.db.Model(&m).Association("Sprints").Clear(); err != nil {
 		return err
 	}
+
 	fixVersions := m.FixVersions
 	if err := l.db.Model(&m).Association("FixVersions").Clear(); err != nil {
 		return err
