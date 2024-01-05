@@ -1,15 +1,25 @@
 package gateway
 
 import (
+	"context"
 	"fmt"
 	"jira-integration/pkg/issue"
 	"jira-integration/pkg/jira"
+	"jira-integration/pkg/sprint"
 	"strings"
 )
 
 type (
+	Database interface {
+		SaveIssueType(ctx context.Context, it issue.Type) error
+		SaveStatus(ctx context.Context, s issue.Status) error
+		SaveFixVersion(ctx context.Context, fv issue.FixVersion) error
+		SaveSprint(ctx context.Context, s sprint.Sprint) error
+	}
+
 	Gateway struct {
 		client *jira.Client
+		db     Database
 	}
 )
 
@@ -42,6 +52,49 @@ func (g Gateway) StreamAllIssues(args ...string) <-chan issue.Issue {
 	return issues
 }
 
+func (g Gateway) SyncDependencies(ctx context.Context) error {
+	issueTypes, err := g.client.GetIssueTypes()
+	if err != nil {
+		return err
+	}
+
+	for _, issueType := range issueTypes {
+		fmt.Println("fetching issue type", issueType.Name)
+		if err := g.db.SaveIssueType(ctx, issueType); err != nil {
+			return err
+		}
+	}
+
+	statuses, err := g.client.GetStatuses()
+	if err != nil {
+		return err
+	}
+
+	for _, status := range statuses {
+		fmt.Println("fetching status", status.Name)
+		if err := g.db.SaveStatus(ctx, status); err != nil {
+			return err
+		}
+	}
+
+	fixVersions := g.client.StreamFixVersions()
+	for fixVersion := range fixVersions {
+		fmt.Println("fetching fix version", fixVersion.Name)
+		if err := g.db.SaveFixVersion(ctx, fixVersion); err != nil {
+			return err
+		}
+	}
+
+	sprints := g.client.StreamSprints()
+	for s := range sprints {
+		fmt.Println("fetching sprint", s.Name)
+		if err := g.db.SaveSprint(ctx, s); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 func (g Gateway) streamAllIssues(params jira.SearchRequest, issues chan issue.Issue) {
 	response, err := g.client.Search(params)
 	if err != nil {
