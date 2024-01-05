@@ -75,8 +75,8 @@ type (
 	}
 
 	Issue struct {
-		ID           uint `gorm:"primarykey"`
-		Key          string
+		ID           uint   `gorm:"primarykey"`
+		Key          string `gorm:"unique"`
 		Summary      string
 		Project      Project
 		ProjectID    uint
