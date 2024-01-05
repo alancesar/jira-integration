@@ -6,6 +6,7 @@ import (
 	"jira-integration/pkg/issue"
 	"jira-integration/pkg/jira"
 	"jira-integration/pkg/sprint"
+	"log"
 	"strings"
 )
 
@@ -14,6 +15,7 @@ type (
 		SaveIssueType(ctx context.Context, it issue.Type) error
 		SaveStatus(ctx context.Context, s issue.Status) error
 		SaveFixVersion(ctx context.Context, fv issue.FixVersion) error
+		SaveIssue(ctx context.Context, i issue.Issue) error
 		SaveSprint(ctx context.Context, s sprint.Sprint) error
 	}
 
@@ -29,27 +31,32 @@ func New(client *jira.Client) *Gateway {
 	}
 }
 
-func (g Gateway) StreamAllIssues(args ...string) <-chan issue.Issue {
+func (g Gateway) SyncIssues(ctx context.Context, args ...string) {
 	issues := make(chan issue.Issue)
 	parsedArgs := strings.Join(args, " and ")
 
 	go func() {
 		jql := fmt.Sprintf("%s and issuetype = Epic", parsedArgs)
 		params := jira.DefaultSearchRequest(jql, 0)
-		g.streamAllIssues(params, issues)
+		g.streamIssues(params, issues)
 
 		jql = fmt.Sprintf("%s and issuetype in (standardIssueTypes())", parsedArgs)
 		params = jira.DefaultSearchRequest(jql, 0)
-		g.streamAllIssues(params, issues)
+		g.streamIssues(params, issues)
 
 		jql = fmt.Sprintf("%s and issuetype in (subTaskIssueTypes())", parsedArgs)
 		params = jira.DefaultSearchRequest(jql, 0)
-		g.streamAllIssues(params, issues)
+		g.streamIssues(params, issues)
 
 		close(issues)
 	}()
 
-	return issues
+	for iss := range issues {
+		fmt.Println("fetching issue", iss.Key)
+		if err := g.db.SaveIssue(ctx, iss); err != nil {
+			log.Println(err)
+		}
+	}
 }
 
 func (g Gateway) SyncDependencies(ctx context.Context) error {
@@ -95,7 +102,7 @@ func (g Gateway) SyncDependencies(ctx context.Context) error {
 
 	return nil
 }
-func (g Gateway) streamAllIssues(params jira.SearchRequest, issues chan issue.Issue) {
+func (g Gateway) streamIssues(params jira.SearchRequest, issues chan issue.Issue) {
 	response, err := g.client.Search(params)
 	if err != nil {
 		fmt.Println(err)
@@ -107,7 +114,7 @@ func (g Gateway) streamAllIssues(params jira.SearchRequest, issues chan issue.Is
 	}
 
 	if response.StartAt+response.MaxResults < response.Total {
-		g.streamAllIssues(jira.SearchRequest{
+		g.streamIssues(jira.SearchRequest{
 			Fields:       params.Fields,
 			FieldsByKeys: params.FieldsByKeys,
 			JQL:          params.JQL,
