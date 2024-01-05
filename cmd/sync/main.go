@@ -50,7 +50,7 @@ func main() {
 	}
 
 	client := jira.NewClient(boardID, credentials, http.DefaultClient)
-	g := gateway.New(client)
+	g := gateway.New(db, client)
 
 	if full {
 		if err := g.SyncDependencies(ctx); err != nil {

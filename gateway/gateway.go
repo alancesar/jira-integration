@@ -25,8 +25,9 @@ type (
 	}
 )
 
-func New(client *jira.Client) *Gateway {
+func New(db Database, client *jira.Client) *Gateway {
 	return &Gateway{
+		db:     db,
 		client: client,
 	}
 }
