@@ -36,7 +36,7 @@ func (l SQLite) SaveIssue(ctx context.Context, i issue.Issue) error {
 	var exists bool
 	if err := l.db.Model(&model.Issue{}).
 		Select("COUNT(*) > 0").
-		Where("key = ?", i.Key).
+		Where("id = ?", i.ID).
 		Find(&exists).
 		Error; err != nil {
 		return err
