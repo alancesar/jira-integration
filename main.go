@@ -91,7 +91,7 @@ func main() {
 	g := gateway.New(client)
 	issues := g.StreamAllIssues(args...)
 	for issue := range issues {
-		log.Println("fetching issue", issue.Key)
+		fmt.Println("fetching issue", issue.Key)
 		if err := db.SaveIssue(ctx, issue); err != nil {
 			log.Println(err)
 		}
