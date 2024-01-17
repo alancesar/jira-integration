@@ -61,6 +61,26 @@ func (g Gateway) SyncIssues(ctx context.Context, args ...string) {
 }
 
 func (g Gateway) SyncDependencies(ctx context.Context) error {
+	fixVersions := g.client.StreamFixVersions()
+	for fixVersion := range fixVersions {
+		fmt.Println("fetching fix version", fixVersion.Name)
+		if err := g.db.SaveFixVersion(ctx, fixVersion); err != nil {
+			return err
+		}
+	}
+
+	sprints := g.client.StreamSprints()
+	for s := range sprints {
+		fmt.Println("fetching sprint", s.Name)
+		if err := g.db.SaveSprint(ctx, s); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (g Gateway) Setup(ctx context.Context) error {
 	issueTypes, err := g.client.GetIssueTypes()
 	if err != nil {
 		return err
@@ -85,24 +105,9 @@ func (g Gateway) SyncDependencies(ctx context.Context) error {
 		}
 	}
 
-	fixVersions := g.client.StreamFixVersions()
-	for fixVersion := range fixVersions {
-		fmt.Println("fetching fix version", fixVersion.Name)
-		if err := g.db.SaveFixVersion(ctx, fixVersion); err != nil {
-			return err
-		}
-	}
-
-	sprints := g.client.StreamSprints()
-	for s := range sprints {
-		fmt.Println("fetching sprint", s.Name)
-		if err := g.db.SaveSprint(ctx, s); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
+
 func (g Gateway) streamIssues(params jira.SearchRequest, issues chan issue.Issue) {
 	response, err := g.client.Search(params)
 	if err != nil {

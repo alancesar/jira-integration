@@ -53,9 +53,13 @@ func main() {
 	g := gateway.New(db, client)
 
 	if full {
-		if err := g.SyncDependencies(ctx); err != nil {
+		if err := g.Setup(ctx); err != nil {
 			log.Fatalln(err)
 		}
+	}
+
+	if err := g.SyncDependencies(ctx); err != nil {
+		log.Fatalln(err)
 	}
 
 	g.SyncIssues(ctx, args...)
