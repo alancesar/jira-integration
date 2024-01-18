@@ -61,13 +61,21 @@ func (l SQLite) SaveIssue(ctx context.Context, i issue.Issue) error {
 }
 
 func (l SQLite) GetLastUpdate(ctx context.Context) (time.Time, error) {
-	var updatedAt time.Time
-	tx := l.db.WithContext(ctx).Raw(`select max(updated_at) from issues`).Scan(&updatedAt)
+	var rawDatetime string
+	tx := l.db.WithContext(ctx).Raw(`select max(updated_at) from issues`).Scan(&rawDatetime)
 	if tx.Error != nil {
 		return time.Time{}, tx.Error
+	} else if rawDatetime == "" {
+		return time.Time{}, nil
 	}
 
-	return updatedAt, nil
+	rawDate := rawDatetime[0:10]
+	parsed, err := time.Parse("2006-01-02", rawDate)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return parsed, nil
 }
 
 func (l SQLite) SaveIssueType(ctx context.Context, it issue.Type) error {
