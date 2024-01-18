@@ -1,4 +1,6 @@
+create view if not exists issues_by_sprint as
 select issue.*,
+       issue_type.name as issue_type_name,
        sprint.id as sprint_id
 from issues issue
          inner join (select issue_id, MAX(sprint_id) as sprint_id
