@@ -23,6 +23,7 @@ func NewSQLite(db *gorm.DB) *SQLite {
 		&model.Status{},
 		&model.IssueType{},
 		&model.Sprint{},
+		&model.Product{},
 		&model.Issue{},
 	); err != nil {
 		log.Fatal("while running auto migrate", err)
@@ -117,7 +118,13 @@ func (l SQLite) updateIssue(ctx context.Context, i issue.Issue) error {
 		return err
 	}
 
+	products := m.Products
+	if err := l.db.Model(&m).Association("Products").Clear(); err != nil {
+		return err
+	}
+
 	m.Sprints = sprints
+	m.Products = products
 	tx := l.db.Omit("Parent").WithContext(ctx).Save(&m)
 	return tx.Error
 }

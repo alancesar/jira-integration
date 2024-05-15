@@ -12,6 +12,11 @@ type (
 		Name string `json:"name,omitempty"`
 	}
 
+	Product struct {
+		ID   uint
+		Name string
+	}
+
 	Type struct {
 		ID          uint
 		Description string
@@ -54,6 +59,7 @@ type (
 		Assignee    *Account
 		Reporter    Account
 		StoryPoints uint
+		Product     []Product
 		CreatedAt   time.Time
 		UpdatedAt   time.Time
 	}

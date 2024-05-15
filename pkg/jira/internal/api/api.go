@@ -97,6 +97,7 @@ type (
 		Assignee    *Account  `json:"assignee,omitempty"`
 		Reporter    Account   `json:"reporter"`
 		StoryPoints float32   `json:"customfield_10025,omitempty"`
+		Product     []Field   `json:"customfield_10693,omitempty"`
 		Creator     Account   `json:"creator"`
 		Project     Project   `json:"project"`
 		Created     DateTime  `json:"created"`
@@ -174,6 +175,16 @@ func (i Issue) ToDomain() issue.Issue {
 		output.Sprints = make([]sprint.Sprint, len(i.Fields.Sprints), len(i.Fields.Sprints))
 		for index := range i.Fields.Sprints {
 			output.Sprints[index] = i.Fields.Sprints[index].ToDomain()
+		}
+	}
+
+	if i.Fields.Product != nil {
+		output.Product = make([]issue.Product, len(i.Fields.Product), len(i.Fields.Product))
+		for index, product := range i.Fields.Product {
+			output.Product[index] = issue.Product{
+				ID:   stringToUint(product.ID),
+				Name: product.Value,
+			}
 		}
 	}
 

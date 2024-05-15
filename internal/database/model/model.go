@@ -54,6 +54,11 @@ type (
 		Subtask     bool
 	}
 
+	Product struct {
+		ID   uint `gorm:"primarykey"`
+		Name string
+	}
+
 	Issue struct {
 		ID          uint   `gorm:"primarykey"`
 		Key         string `gorm:"unique"`
@@ -73,6 +78,7 @@ type (
 		ReporterID  string
 		Reporter    Account
 		StoryPoints *uint
+		Products    []Product `gorm:"many2many:issue_products"`
 		CreatedAt   time.Time `gorm:"autoCreateTime:false"`
 		UpdatedAt   time.Time `gorm:"autoUpdateTime:false"`
 	}
@@ -96,6 +102,7 @@ func NewIssue(i issue.Issue) *Issue {
 		ReporterID:  i.Reporter.ID,
 		Reporter:    NewAccount(i.Reporter),
 		StoryPoints: uintToPointer(i.StoryPoints),
+		Products:    NewProducts(i.Product),
 		CreatedAt:   i.CreatedAt,
 		UpdatedAt:   i.UpdatedAt,
 	}
@@ -163,6 +170,26 @@ func NewSprints(sprints []sprint.Sprint) []Sprint {
 	output := make([]Sprint, len(sprints), len(sprints))
 	for i := range sprints {
 		output[i] = NewSprint(sprints[i])
+	}
+
+	return output
+}
+
+func NewProduct(p issue.Product) Product {
+	return Product{
+		ID:   p.ID,
+		Name: p.Name,
+	}
+}
+
+func NewProducts(products []issue.Product) []Product {
+	if products == nil {
+		return nil
+	}
+
+	output := make([]Product, len(products), len(products))
+	for i := range products {
+		output[i] = NewProduct(products[i])
 	}
 
 	return output

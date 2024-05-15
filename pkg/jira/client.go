@@ -98,6 +98,7 @@ func DefaultSearchRequest(jql string, startAt int) SearchRequest {
 			"updated",
 			"customfield_10025",
 			"customfield_10020",
+			"customfield_10693",
 		},
 		JQL:        jql,
 		MaxResults: defaultMaxResults,
