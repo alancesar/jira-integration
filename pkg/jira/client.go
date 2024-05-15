@@ -89,29 +89,15 @@ func DefaultSearchRequest(jql string, startAt int) SearchRequest {
 			"status",
 			"assignee",
 			"reporter",
-			"priority",
 			"issuetype",
-			"fixVersions",
 			"labels",
 			"sprint",
 			"parent",
 			"project",
-			"resolution",
-			"progress",
-			"aggregateprogress",
-			"aggregatetimespent",
-			"aggregatetimeestimate",
-			"timespent",
-			"resolutiondate",
 			"created",
 			"updated",
 			"customfield_10025",
 			"customfield_10020",
-			"customfield_10183",
-			"customfield_10427",
-			"customfield_10231",
-			"customfield_10444",
-			"customfield_10448",
 		},
 		JQL:        jql,
 		MaxResults: defaultMaxResults,
@@ -182,12 +168,6 @@ func (c Client) GetIssueTypes() ([]issue.Type, error) {
 func (c Client) StreamSprints() <-chan sprint.Sprint {
 	baseURL := fmt.Sprintf("%s/board/%d/sprint", jiraAgileAPIBasePath, c.boardID)
 	streamer := NewStreamer[sprint.Sprint, agile.Sprint](c.httpClient)
-	return streamer.Stream(baseURL)
-}
-
-func (c Client) StreamFixVersions() <-chan issue.FixVersion {
-	baseURL := fmt.Sprintf("%s/board/%d/version", jiraAgileAPIBasePath, c.boardID)
-	streamer := NewStreamer[issue.FixVersion, agile.FixVersion](c.httpClient)
 	return streamer.Stream(baseURL)
 }
 

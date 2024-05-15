@@ -21,9 +21,6 @@ func NewSQLite(db *gorm.DB) *SQLite {
 		&model.Project{},
 		&model.StatusCategory{},
 		&model.Status{},
-		&model.Resolution{},
-		&model.FixVersion{},
-		&model.Priority{},
 		&model.IssueType{},
 		&model.Sprint{},
 		&model.Issue{},
@@ -96,12 +93,6 @@ func (l SQLite) SaveSprint(ctx context.Context, s sprint.Sprint) error {
 	return tx.Error
 }
 
-func (l SQLite) SaveFixVersion(ctx context.Context, fv issue.FixVersion) error {
-	m := model.NewFixVersion(fv)
-	tx := l.db.WithContext(ctx).Save(&m)
-	return tx.Error
-}
-
 func (l SQLite) exists(ctx context.Context, i issue.Issue) (bool, error) {
 	var exists bool
 	tx := l.db.Model(&model.Issue{}).
@@ -126,13 +117,7 @@ func (l SQLite) updateIssue(ctx context.Context, i issue.Issue) error {
 		return err
 	}
 
-	fixVersions := m.FixVersions
-	if err := l.db.Model(&m).Association("FixVersions").Clear(); err != nil {
-		return err
-	}
-
 	m.Sprints = sprints
-	m.FixVersions = fixVersions
 	tx := l.db.Omit("Parent").WithContext(ctx).Save(&m)
 	return tx.Error
 }

@@ -56,11 +56,6 @@ func TestClient_Search(t *testing.T) {
 								Name: "Done",
 							},
 						},
-
-						Priority: issue.Priority{
-							ID:   3,
-							Name: "Medium",
-						},
 						Type: issue.Type{
 							ID:          1234,
 							Description: "Some issue type description",
@@ -78,10 +73,6 @@ func TestClient_Search(t *testing.T) {
 									ID:   4,
 									Name: "In Progress",
 								},
-							},
-							Priority: issue.Priority{
-								ID:   3,
-								Name: "Medium",
 							},
 							Type: issue.Type{
 								ID:          10000,
@@ -109,16 +100,6 @@ func TestClient_Search(t *testing.T) {
 								EndedAt:   time.Date(2023, 4, 13, 21, 0, 0, 0, time.UTC),
 							},
 						},
-						FixVersions: []issue.FixVersion{
-							{
-								ID:          123,
-								Name:        "2023 - Q1",
-								Description: "Release 2023/Q1",
-								ReleaseDate: mustParseTime("2006-01-02", "2023-03-31"),
-								Archived:    false,
-								Released:    false,
-							},
-						},
 						Labels:      []string{"Some Label", "Another Label"},
 						StoryPoints: 3,
 						Assignee: &issue.Account{
@@ -130,10 +111,8 @@ func TestClient_Search(t *testing.T) {
 							TimeZone:     "America/Sao_Paulo",
 							AccountType:  "atlassian",
 						},
-						NewProjects: "Maquininha - FXaaS",
-						Allocation:  "Operação",
-						CreatedAt:   mustParseTime("2006-01-02T15:04:05.999-0700", "2023-04-12T14:00:00.0-0300"),
-						UpdatedAt:   mustParseTime("2006-01-02T15:04:05.999-0700", "2023-04-13T16:00:00.0-0300"),
+						CreatedAt: mustParseTime("2006-01-02T15:04:05.999-0700", "2023-04-12T14:00:00.0-0300"),
+						UpdatedAt: mustParseTime("2006-01-02T15:04:05.999-0700", "2023-04-13T16:00:00.0-0300"),
 					},
 				},
 			},

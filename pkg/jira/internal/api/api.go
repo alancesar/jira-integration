@@ -45,23 +45,10 @@ type (
 		CompleteDate time.Time `json:"completeDate,omitempty"`
 	}
 
-	FixVersion struct {
-		Field
-		Description string `json:"description"`
-		ReleaseDate Date   `json:"releaseDate"`
-		Archived    bool   `json:"archived"`
-		Released    bool   `json:"released"`
-	}
-
 	Status struct {
 		Field
 		IconURL  string         `json:"iconUrl"`
 		Category StatusCategory `json:"statusCategory"`
-	}
-
-	Resolution struct {
-		Field
-		Description string `json:"description"`
 	}
 
 	StatusCategory struct {
@@ -70,12 +57,6 @@ type (
 		Name      string `json:"name,omitempty"`
 		Key       string `json:"key"`
 		ColorName string `json:"colorName"`
-	}
-
-	Progress struct {
-		Progress int `json:"progress"`
-		Total    int `json:"total"`
-		Percent  int `json:"percent"`
 	}
 
 	AvatarURLs map[string]string
@@ -106,34 +87,20 @@ type (
 	}
 
 	Fields struct {
-		Summary               string             `json:"summary"`
-		Status                Status             `json:"status"`
-		Priority              Priority           `json:"priority"`
-		IssueType             IssueType          `json:"issuetype"`
-		Parent                *Issue             `json:"parent,omitempty"`
-		Sprints               []Sprint           `json:"customfield_10020,omitempty"`
-		FixVersions           []FixVersion       `json:"fixVersions,omitempty"`
-		Labels                []string           `json:"labels,omitempty"`
-		Assignee              *Account           `json:"assignee,omitempty"`
-		Reporter              Account            `json:"reporter"`
-		StoryPoints           float32            `json:"customfield_10025,omitempty"`
-		NewProjects           FieldWithSubfield  `json:"customfield_10444,omitempty"`
-		Allocation            Field              `json:"customfield_10427,omitempty"`
-		Resolution            *Resolution        `json:"resolution"`
-		Environment           Field              `json:"customfield_10448"`
-		Creator               Account            `json:"creator"`
-		Squad                 *Field             `json:"customfield_10183"`
-		RequestType           string             `json:"customfield_10184"`
-		Project               Project            `json:"project"`
-		TimeSpent             int                `json:"timespent"`
-		AggregateTimeSpent    int                `json:"aggregatetimespent"`
-		AggregateTimeEstimate int                `json:"aggregatetimeestimate"`
-		Progress              Progress           `json:"progress"`
-		AggregateProgress     Progress           `json:"aggregateprogress"`
-		System                *FieldWithSubfield `json:"customfield_10231,omitempty"`
-		ResolutionDate        *DateTime          `json:"resolutiondate,omitempty"`
-		Created               DateTime           `json:"created"`
-		Updated               DateTime           `json:"updated"`
+		Summary     string    `json:"summary"`
+		Status      Status    `json:"status"`
+		Priority    Priority  `json:"priority"`
+		IssueType   IssueType `json:"issuetype"`
+		Parent      *Issue    `json:"parent,omitempty"`
+		Sprints     []Sprint  `json:"customfield_10020,omitempty"`
+		Labels      []string  `json:"labels,omitempty"`
+		Assignee    *Account  `json:"assignee,omitempty"`
+		Reporter    Account   `json:"reporter"`
+		StoryPoints float32   `json:"customfield_10025,omitempty"`
+		Creator     Account   `json:"creator"`
+		Project     Project   `json:"project"`
+		Created     DateTime  `json:"created"`
+		Updated     DateTime  `json:"updated"`
 	}
 
 	Issue struct {
@@ -179,29 +146,18 @@ func (i Issue) ToDomain() issue.Issue {
 				Name: i.Fields.Status.Category.Name,
 			},
 		},
-		Priority: issue.Priority{
-			ID:   stringToUint(i.Fields.Priority.ID),
-			Name: i.Fields.Priority.Name,
-		},
 		Type: issue.Type{
 			ID:          stringToUint(i.Fields.IssueType.ID),
 			Description: i.Fields.IssueType.Description,
 			Name:        i.Fields.IssueType.Name,
 			Subtask:     i.Fields.IssueType.Subtask,
 		},
-		Project:               i.Fields.Project.ToDomain(),
-		Progress:              i.Fields.Progress.ToDomain(),
-		AggregateProgress:     i.Fields.AggregateProgress.ToDomain(),
-		AggregateTimeSpent:    i.Fields.AggregateTimeSpent,
-		AggregateTimeEstimate: i.Fields.AggregateTimeEstimate,
-		TimeSpent:             i.Fields.TimeSpent,
-		Labels:                i.Fields.Labels,
-		Reporter:              i.Fields.Reporter.ToDomain(),
-		StoryPoints:           uint(i.Fields.StoryPoints),
-		NewProjects:           i.Fields.NewProjects.JoinValues(),
-		Allocation:            i.Fields.Allocation.Value,
-		CreatedAt:             time.Time(i.Fields.Created),
-		UpdatedAt:             time.Time(i.Fields.Updated),
+		Project:     i.Fields.Project.ToDomain(),
+		Labels:      i.Fields.Labels,
+		Reporter:    i.Fields.Reporter.ToDomain(),
+		StoryPoints: uint(i.Fields.StoryPoints),
+		CreatedAt:   time.Time(i.Fields.Created),
+		UpdatedAt:   time.Time(i.Fields.Updated),
 	}
 
 	if i.Fields.Parent != nil {
@@ -221,32 +177,6 @@ func (i Issue) ToDomain() issue.Issue {
 		}
 	}
 
-	if i.Fields.Resolution != nil {
-		resolution := i.Fields.Resolution.ToDomain()
-		output.Resolution = &resolution
-	}
-
-	if i.Fields.System != nil {
-		system := i.Fields.System.JoinValues()
-		output.System = &system
-	}
-
-	if i.Fields.Squad != nil {
-		output.Squad = &i.Fields.Squad.Value
-	}
-
-	if i.Fields.FixVersions != nil {
-		output.FixVersions = make([]issue.FixVersion, len(i.Fields.FixVersions), len(i.Fields.FixVersions))
-		for index := range i.Fields.FixVersions {
-			output.FixVersions[index] = i.Fields.FixVersions[index].ToDomain()
-		}
-	}
-
-	if i.Fields.ResolutionDate != nil {
-		resolvedAt := time.Time(*i.Fields.ResolutionDate)
-		output.ResolvedAt = &resolvedAt
-	}
-
 	return output
 }
 
@@ -258,14 +188,6 @@ func (s Status) ToDomain() issue.Status {
 			ID:   s.Category.ID,
 			Name: s.Category.Name,
 		},
-	}
-}
-
-func (r Resolution) ToDomain() issue.Resolution {
-	return issue.Resolution{
-		ID:          stringToUint(r.ID),
-		Description: r.Description,
-		Name:        r.Name,
 	}
 }
 
@@ -290,17 +212,6 @@ func (s Sprint) ToDomain() sprint.Sprint {
 	}
 }
 
-func (f FixVersion) ToDomain() issue.FixVersion {
-	return issue.FixVersion{
-		ID:          stringToUint(f.ID),
-		Name:        f.Name,
-		Description: f.Description,
-		Archived:    f.Archived,
-		Released:    f.Released,
-		ReleaseDate: time.Time(f.ReleaseDate),
-	}
-}
-
 func (au AvatarURLs) Larger() string {
 	orderedKeys := []string{"48x48", "32x32", "24x24", "16x16"}
 	for _, key := range orderedKeys {
@@ -321,14 +232,6 @@ func (a Account) ToDomain() issue.Account {
 		Active:       a.Active,
 		TimeZone:     a.TimeZone,
 		AccountType:  a.AccountType,
-	}
-}
-
-func (p Progress) ToDomain() issue.Progress {
-	return issue.Progress{
-		Progress: p.Progress,
-		Total:    p.Total,
-		Percent:  p.Percent,
 	}
 }
 

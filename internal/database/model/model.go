@@ -29,15 +29,6 @@ type (
 		CompletedAt time.Time
 	}
 
-	FixVersion struct {
-		ID          uint `gorm:"primarykey"`
-		Name        string
-		Description string
-		Archived    bool
-		Released    bool
-		ReleaseDate time.Time
-	}
-
 	Project struct {
 		ID   uint `gorm:"primarykey"`
 		Key  string
@@ -56,17 +47,6 @@ type (
 		Name string
 	}
 
-	Resolution struct {
-		ID          uint `gorm:"primarykey"`
-		Name        string
-		Description string
-	}
-
-	Priority struct {
-		ID   uint `gorm:"primarykey"`
-		Name string
-	}
-
 	IssueType struct {
 		ID          uint `gorm:"primarykey"`
 		Description string
@@ -75,36 +55,26 @@ type (
 	}
 
 	Issue struct {
-		ID           uint   `gorm:"primarykey"`
-		Key          string `gorm:"unique"`
-		Summary      string
-		Project      Project
-		ProjectID    uint
-		StatusID     uint
-		Resolution   *Resolution
-		ResolutionID *uint
-		Status       Status
-		PriorityID   uint
-		Priority     Priority
-		IssueTypeID  uint
-		IssueType    IssueType
-		ParentID     *uint
-		Parent       *Issue
-		Sprints      []Sprint     `gorm:"many2many:issue_sprints"`
-		FixVersions  []FixVersion `gorm:"many2many:issue_fix_versions"`
-		Labels       datatypes.JSON
-		AssigneeID   *string
-		Assignee     *Account
-		ReporterID   string
-		Reporter     Account
-		StoryPoints  *uint
-		NewProjects  *string
-		Allocation   *string
-		TimeSpent    int
-		Squad        *string
-		System       *string
-		CreatedAt    time.Time `gorm:"autoCreateTime:false"`
-		UpdatedAt    time.Time `gorm:"autoUpdateTime:false"`
+		ID          uint   `gorm:"primarykey"`
+		Key         string `gorm:"unique"`
+		Summary     string
+		Project     Project
+		ProjectID   uint
+		StatusID    uint
+		Status      Status
+		IssueTypeID uint
+		IssueType   IssueType
+		ParentID    *uint
+		Parent      *Issue
+		Sprints     []Sprint `gorm:"many2many:issue_sprints"`
+		Labels      datatypes.JSON
+		AssigneeID  *string
+		Assignee    *Account
+		ReporterID  string
+		Reporter    Account
+		StoryPoints *uint
+		CreatedAt   time.Time `gorm:"autoCreateTime:false"`
+		UpdatedAt   time.Time `gorm:"autoUpdateTime:false"`
 	}
 )
 
@@ -119,29 +89,15 @@ func NewIssue(i issue.Issue) *Issue {
 		ProjectID:   i.Project.ID,
 		StatusID:    i.Status.ID,
 		Status:      NewStatus(i.Status),
-		PriorityID:  i.Priority.ID,
-		Priority:    NewPriority(i.Priority),
 		IssueTypeID: i.Type.ID,
 		IssueType:   NewIssueType(i.Type),
 		Sprints:     NewSprints(i.Sprints),
-		FixVersions: NewFixVersions(i.FixVersions),
 		Labels:      labels,
 		ReporterID:  i.Reporter.ID,
 		Reporter:    NewAccount(i.Reporter),
 		StoryPoints: uintToPointer(i.StoryPoints),
-		NewProjects: stringToPointer(i.NewProjects),
-		Allocation:  stringToPointer(i.Allocation),
-		TimeSpent:   i.TimeSpent,
 		CreatedAt:   i.CreatedAt,
 		UpdatedAt:   i.UpdatedAt,
-	}
-
-	if i.System != nil {
-		output.System = i.System
-	}
-
-	if i.Squad != nil {
-		output.Squad = i.Squad
 	}
 
 	if i.Assignee != nil {
@@ -153,12 +109,6 @@ func NewIssue(i issue.Issue) *Issue {
 	if i.Parent != nil {
 		output.Parent = NewIssue(*i.Parent)
 		output.ParentID = uintToPointer(i.Parent.ID)
-	}
-
-	if i.Resolution != nil {
-		resolution := NewResolution(*i.Resolution)
-		output.Resolution = &resolution
-		output.ResolutionID = &resolution.ID
 	}
 
 	return output
@@ -181,25 +131,10 @@ func NewStatus(s issue.Status) Status {
 	}
 }
 
-func NewResolution(r issue.Resolution) Resolution {
-	return Resolution{
-		ID:          r.ID,
-		Name:        r.Name,
-		Description: r.Description,
-	}
-}
-
 func NewStatusCategory(c issue.StatusCategory) StatusCategory {
 	return StatusCategory{
 		ID:   c.ID,
 		Name: c.Name,
-	}
-}
-
-func NewPriority(p issue.Priority) Priority {
-	return Priority{
-		ID:   p.ID,
-		Name: p.Name,
 	}
 }
 
@@ -228,26 +163,6 @@ func NewSprints(sprints []sprint.Sprint) []Sprint {
 	output := make([]Sprint, len(sprints), len(sprints))
 	for i := range sprints {
 		output[i] = NewSprint(sprints[i])
-	}
-
-	return output
-}
-
-func NewFixVersion(fv issue.FixVersion) FixVersion {
-	return FixVersion{
-		ID:          fv.ID,
-		Name:        fv.Name,
-		Description: fv.Description,
-		Archived:    fv.Archived,
-		Released:    fv.Released,
-		ReleaseDate: fv.ReleaseDate,
-	}
-}
-
-func NewFixVersions(fvs []issue.FixVersion) []FixVersion {
-	output := make([]FixVersion, len(fvs), len(fvs))
-	for i := range fvs {
-		output[i] = NewFixVersion(fvs[i])
 	}
 
 	return output

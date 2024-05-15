@@ -58,7 +58,7 @@ func main() {
 		}
 	}
 
-	if err := g.SyncDependencies(ctx); err != nil {
+	if err := g.SyncSprints(ctx); err != nil {
 		log.Fatalln(err)
 	}
 

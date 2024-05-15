@@ -1,7 +1,6 @@
 package agile
 
 import (
-	"jira-integration/pkg/issue"
 	"jira-integration/pkg/sprint"
 	"strings"
 	"time"
@@ -31,17 +30,6 @@ type (
 		Goal          string    `json:"goal"`
 	}
 )
-
-func (fv FixVersion) ToDomain() issue.FixVersion {
-	return issue.FixVersion{
-		ID:          fv.ID,
-		Name:        fv.Name,
-		Description: fv.Description,
-		Archived:    fv.Archived,
-		Released:    fv.Released,
-		ReleaseDate: fv.ReleaseDate,
-	}
-}
 
 func (s Sprint) ToDomain() sprint.Sprint {
 	return sprint.Sprint{

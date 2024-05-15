@@ -14,7 +14,6 @@ type (
 	Database interface {
 		SaveIssueType(ctx context.Context, it issue.Type) error
 		SaveStatus(ctx context.Context, s issue.Status) error
-		SaveFixVersion(ctx context.Context, fv issue.FixVersion) error
 		SaveIssue(ctx context.Context, i issue.Issue) error
 		SaveSprint(ctx context.Context, s sprint.Sprint) error
 	}
@@ -60,15 +59,7 @@ func (g Gateway) SyncIssues(ctx context.Context, args ...string) {
 	}
 }
 
-func (g Gateway) SyncDependencies(ctx context.Context) error {
-	fixVersions := g.client.StreamFixVersions()
-	for fixVersion := range fixVersions {
-		fmt.Println("fetching fix version", fixVersion.Name)
-		if err := g.db.SaveFixVersion(ctx, fixVersion); err != nil {
-			return err
-		}
-	}
-
+func (g Gateway) SyncSprints(ctx context.Context) error {
 	sprints := g.client.StreamSprints()
 	for s := range sprints {
 		fmt.Println("fetching sprint", s.Name)

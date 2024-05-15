@@ -1,32 +1,5 @@
 package mock
 
-const SearchJqlRequest = `
-{
-    "fields": [
-        "summary",
-        "status",
-        "assignee",
-        "fixVersions",
-        "labels",
-        "sprint",
-        "epic",
-        "parent",
-        "priority",
-        "issuetype",
-        "customfield_10070",
-        "customfield_10020",
-        "customfield_10106",
-        "customfield_10441",
-        "customfield_10444",
-        "customfield_10427"
-    ],
-    "fieldsByKeys": false,
-    "jql": "project = MAQ AND key = MAQ-1234",
-    "maxResults": 15,
-    "startAt": 0
-}
-`
-
 const SearchResponse = `
 {
     "expand": "names,schema",
@@ -143,25 +116,10 @@ const SearchResponse = `
                     "Some Label",
 					"Another Label"
                 ],
-                "customfield_10444": {
-                    "self": "https://bexs.atlassian.net/rest/api/3/customFieldOption/10444",
-                    "value": "Maquininha",
-                    "id": "14026",
-                    "child": {
-                        "self": "https://bexs.atlassian.net/rest/api/3/customFieldOption/14034",
-                        "value": "FXaaS",
-                        "id": "14034"
-                    }
-                },
                 "customfield_10106": {
                     "self": "https://bexs.atlassian.net/rest/api/3/customFieldOption/10106",
                     "value": "DigitalFx",
                     "id": "10106"
-                },
-                "customfield_10427": {
-                    "self": "https://bexs.atlassian.net/rest/api/3/customFieldOption/10427",
-                    "value": "Operação",
-                    "id": "10427"
                 },
                 "assignee": {
                     "self": "https://bexs.atlassian.net/rest/api/3/user?accountId=abc123",
