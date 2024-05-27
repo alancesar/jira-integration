@@ -15,6 +15,7 @@ select issue.*,
        issue_type.id       as issue_type_id,
        issue_type.name     as issue_type_name,
        issue_type.subtask  as is_subtask,
+       changelog.*,
        sprint.id           as sprint_id,
        sprint.name         as sprint_name,
        sprint.state        as sprint_state,
@@ -23,6 +24,14 @@ from issues issue
          inner join (select issue_id, max(sprint_id) as sprint_id
                      from issue_sprints
                      group by issue_id) last_sprint on issue.id = last_sprint.issue_id
+         left join (select c.issue_id,
+                           max(case when c.to_status_id = 10379 then c.created_at end) as started_at,
+                           max(case when c.to_status_id = 10377 then c.created_at end) as committed_at,
+                           max(case when c.to_status_id = 10483 then c.created_at end) as tested_at,
+                           max(case when c.to_status_id = 10291 then c.created_at end) as finished_at
+                    from changelogs c
+                             inner join statuses s on s.id = c.to_status_id
+                    group by c.issue_id) as changelog on changelog.issue_id = issue.id
          inner join issue_types issue_type on issue.issue_type_id = issue_type.id
          inner join sprints sprint on last_sprint.sprint_id = sprint.id
 where issue.status_id = 10291
