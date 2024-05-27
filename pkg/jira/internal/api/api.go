@@ -111,12 +111,37 @@ type (
 		Fields Fields `json:"fields"`
 	}
 
+	ChangelogItem struct {
+		Field      string `json:"field"`
+		FieldType  string `json:"fieldtype"`
+		From       string `json:"from"`
+		FromString string `json:"fromString"`
+		To         string `json:"to"`
+		ToString   string `json:"toString"`
+		FieldID    string `json:"fieldId"`
+	}
+
+	Changelog struct {
+		ID      string          `json:"id"`
+		Author  Account         `json:"author"`
+		Created DateTime        `json:"created"`
+		Items   []ChangelogItem `json:"items"`
+	}
+
 	SearchResponse struct {
 		Expand     string  `json:"expand"`
 		StartAt    int     `json:"startAt"`
 		MaxResults int     `json:"maxResults"`
 		Total      int     `json:"total"`
 		Issues     []Issue `json:"issues"`
+	}
+
+	ChangelogResponse struct {
+		MaxResults int         `json:"maxResults"`
+		StartAt    int         `json:"startAt"`
+		Total      int         `json:"total"`
+		IsLast     bool        `json:"isLast"`
+		Values     []Changelog `json:"values"`
 	}
 )
 
@@ -251,6 +276,18 @@ func (p Project) ToDomain() issue.Project {
 		ID:   stringToUint(p.ID),
 		Key:  p.Key,
 		Name: p.Name,
+	}
+}
+
+func (c Changelog) ToDomain() issue.Changelog {
+	item := c.Items[len(c.Items)-1]
+	return issue.Changelog{
+		ID:           stringToUint(c.ID),
+		Author:       c.Author.ToDomain(),
+		Field:        issue.ChangelogField(item.Field),
+		FromStatusID: stringToUint(item.From),
+		ToStatusID:   stringToUint(item.To),
+		CreatedAt:    time.Time(c.Created),
 	}
 }
 

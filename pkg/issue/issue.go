@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+const (
+	StatusChangelogField = "status"
+)
+
 type (
 	Project struct {
 		ID   uint   `json:"id"`
@@ -43,6 +47,17 @@ type (
 		Active       bool
 		TimeZone     string
 		AccountType  string
+	}
+
+	ChangelogField string
+
+	Changelog struct {
+		ID           uint
+		Author       Account
+		Field        ChangelogField
+		FromStatusID uint
+		ToStatusID   uint
+		CreatedAt    time.Time
 	}
 
 	Issue struct {
