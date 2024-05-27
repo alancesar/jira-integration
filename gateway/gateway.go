@@ -16,6 +16,7 @@ type (
 		SaveStatus(ctx context.Context, s issue.Status) error
 		SaveIssue(ctx context.Context, i issue.Issue) error
 		SaveSprint(ctx context.Context, s sprint.Sprint) error
+		SaveChangelog(ctx context.Context, i issue.Issue, c issue.Changelog) error
 	}
 
 	Gateway struct {
@@ -55,6 +56,18 @@ func (g Gateway) SyncIssues(ctx context.Context, args ...string) {
 		fmt.Println("fetching issue", iss.Key)
 		if err := g.db.SaveIssue(ctx, iss); err != nil {
 			log.Println(err)
+		}
+
+		fmt.Println("fetching issue", iss.Key, "changelog")
+		changelog := g.client.StreamChangelog(iss.Key)
+		for c := range changelog {
+			if c.Field != issue.StatusChangelogField {
+				continue
+			}
+
+			if err := g.db.SaveChangelog(ctx, iss, c); err != nil {
+				log.Println(err)
+			}
 		}
 	}
 }
