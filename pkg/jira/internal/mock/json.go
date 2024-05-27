@@ -8,7 +8,6 @@ const SearchResponse = `
     "total": 1,
     "issues": [
         {
-            "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
             "id": "1234",
             "self": "https://bexs.atlassian.net/rest/api/3/issue/1234",
             "key": "MAQ-1234",
