@@ -63,7 +63,6 @@ type (
 	Issue struct {
 		ID          uint
 		Key         string
-		Description string
 		Summary     string
 		Status      Status
 		Type        Type
