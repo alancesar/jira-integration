@@ -57,13 +57,17 @@ where (kind is null or products.issue_id is null)
 order by issues_by_sprint.id desc;
 
 --- issues
-select i.key                      as "Key",
-       i.summary                  as "Summary",
-       i.story_points             as "Story Points",
-       i.issue_type_name          as "Issue Type",
-       i.kind                     as "Kind",
-       i.allocation               as "Allocation",
-       group_concat(p.name, ', ') as "Products"
+select i.key                                                     as "Key",
+       i.summary                                                 as "Summary",
+       i.story_points                                            as "Story Points",
+       round(julianday(i.finished_at) - julianday(i.started_at)) as "Time Spent",
+       i.issue_type_name                                         as "Issue Type",
+       i.kind                                                    as "Kind",
+       i.allocation                                              as "Allocation",
+       group_concat(p.name, ', ')                                as "Products",
+       strftime('%Y-%m-%d', i.started_at)                        as "Started At",
+       strftime('%Y-%m-%d', i.finished_at)                       as "Finished At",
+       i.sprint_name                                             as "Sprint"
 from issues_by_sprint i
          inner join
      (select id from sprints where state = 'closed' order by completed_at desc limit 7) last_sprints
