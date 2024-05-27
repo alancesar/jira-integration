@@ -172,6 +172,12 @@ func (c Client) StreamSprints() <-chan sprint.Sprint {
 	return streamer.Stream(baseURL)
 }
 
+func (c Client) StreamChangelog(key string) <-chan issue.Changelog {
+	baseURL := fmt.Sprintf("%s/issue/%s/changelog", jiraCloudAPIBasePath, key)
+	streamer := NewStreamer[issue.Changelog, api.Changelog](c.httpClient)
+	return streamer.Stream(baseURL)
+}
+
 func (s Streamer[K, I]) Stream(url string) <-chan K {
 	items := make(chan K)
 
