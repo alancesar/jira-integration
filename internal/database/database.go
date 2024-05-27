@@ -24,6 +24,7 @@ func NewSQLite(db *gorm.DB) *SQLite {
 		&model.IssueType{},
 		&model.Sprint{},
 		&model.Product{},
+		&model.Changelog{},
 		&model.Issue{},
 	); err != nil {
 		log.Fatal("while running auto migrate", err)
