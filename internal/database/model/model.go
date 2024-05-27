@@ -59,6 +59,20 @@ type (
 		Name string
 	}
 
+	Changelog struct {
+		ID           uint `gorm:"primarykey"`
+		Issue        Issue
+		IssueID      uint
+		Author       Account
+		AuthorID     string
+		Field        string
+		FromStatus   Status
+		FromStatusID uint
+		ToStatus     Status
+		ToStatusID   uint
+		CreatedAt    time.Time `gorm:"autoCreateTime:false"`
+	}
+
 	Issue struct {
 		ID          uint   `gorm:"primarykey"`
 		Key         string `gorm:"unique"`
@@ -204,6 +218,20 @@ func NewAccount(a issue.Account) Account {
 		Active:       a.Active,
 		TimeZone:     a.TimeZone,
 		AccountType:  a.AccountType,
+	}
+}
+
+func NewChangelog(i issue.Issue, c issue.Changelog) Changelog {
+	return Changelog{
+		ID:           c.ID,
+		IssueID:      i.ID,
+		Issue:        *NewIssue(i),
+		Author:       NewAccount(c.Author),
+		AuthorID:     c.Author.ID,
+		Field:        string(c.Field),
+		FromStatusID: c.FromStatusID,
+		ToStatusID:   c.ToStatusID,
+		CreatedAt:    c.CreatedAt,
 	}
 }
 
