@@ -242,11 +242,3 @@ func uintToPointer(value uint) *uint {
 
 	return &value
 }
-
-func stringToPointer(value string) *string {
-	if value == "" {
-		return nil
-	}
-
-	return &value
-}
