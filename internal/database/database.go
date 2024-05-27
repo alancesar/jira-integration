@@ -95,6 +95,12 @@ func (l SQLite) SaveSprint(ctx context.Context, s sprint.Sprint) error {
 	return tx.Error
 }
 
+func (l SQLite) SaveChangelog(ctx context.Context, i issue.Issue, c issue.Changelog) error {
+	m := model.NewChangelog(i, c)
+	tx := l.db.WithContext(ctx).Save(&m)
+	return tx.Error
+}
+
 func (l SQLite) exists(ctx context.Context, i issue.Issue) (bool, error) {
 	var exists bool
 	tx := l.db.Model(&model.Issue{}).
