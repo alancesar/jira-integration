@@ -77,3 +77,27 @@ from issues_by_sprint i
 where i.is_subtask = false
 group by i.key, i.created_at
 order by i.created_at desc;
+
+
+--- average time spent by story points
+select story_points                                  as "Story Points",
+       sum(issues)                                   as "Issues",
+       round(sum(time_spent * issues) / sum(issues)) as "Mean Time Spent",
+       round(avg(time_spent))                        as "Avg Time Spent",
+       round(min(time_spent))                        as "Min Time Spent",
+       round(max(time_spent))                        as "Max Time Spent"
+from (select count() as issues, story_points, time_spent
+      from (select story_points                                            as story_points,
+                   round((julianday(finished_at) - julianday(started_at))) as time_spent
+            from issues_by_sprint
+                     inner join
+                 (select id
+                  from sprints
+                  where state = 'closed'
+                  order by completed_at desc
+                  limit 7) last_sprints
+                 on last_sprints.id = issues_by_sprint.sprint_id
+            where issues_by_sprint.is_subtask = false)
+      group by 2, 3
+      order by 2, 3)
+group by 1;
