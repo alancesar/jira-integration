@@ -4,6 +4,7 @@ import (
 	"context"
 	"gorm.io/gorm"
 	"jira-integration/internal/database/model"
+	"jira-integration/pkg/financial"
 	"jira-integration/pkg/issue"
 	"jira-integration/pkg/sprint"
 	"log"
@@ -26,8 +27,9 @@ func NewSQLite(db *gorm.DB) *SQLite {
 		&model.Product{},
 		&model.Changelog{},
 		&model.Issue{},
+		&model.Volume{},
 	); err != nil {
-		log.Fatal("while running auto migrate", err)
+		log.Fatalln("while running auto migrate", err)
 	}
 
 	return &SQLite{
@@ -36,7 +38,7 @@ func NewSQLite(db *gorm.DB) *SQLite {
 }
 
 func (l SQLite) SaveIssue(ctx context.Context, i issue.Issue) error {
-	if exists, err := l.exists(ctx, i); err != nil {
+	if exists, err := l.issueExists(ctx, i); err != nil {
 		return err
 	} else if exists {
 		return l.updateIssue(ctx, i)
@@ -87,7 +89,13 @@ func (l SQLite) SaveChangelog(ctx context.Context, i issue.Issue, c issue.Change
 	return tx.Error
 }
 
-func (l SQLite) exists(ctx context.Context, i issue.Issue) (bool, error) {
+func (l SQLite) SaveFinancial(ctx context.Context, v financial.Volume) error {
+	m := model.NewVolume(v)
+	tx := l.db.WithContext(ctx).Save(&m)
+	return tx.Error
+}
+
+func (l SQLite) issueExists(ctx context.Context, i issue.Issue) (bool, error) {
 	var exists bool
 	tx := l.db.Model(&model.Issue{}).
 		WithContext(ctx).

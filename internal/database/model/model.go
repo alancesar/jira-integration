@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"gorm.io/datatypes"
+	"jira-integration/pkg/financial"
 	"jira-integration/pkg/issue"
 	"jira-integration/pkg/sprint"
 	"time"
@@ -95,6 +96,16 @@ type (
 		Products    []Product `gorm:"many2many:issue_products"`
 		CreatedAt   time.Time `gorm:"autoCreateTime:false"`
 		UpdatedAt   time.Time `gorm:"autoUpdateTime:false"`
+	}
+
+	Volume struct {
+		PartnerID   string `gorm:"primaryKey"`
+		CreatedAt   string `gorm:"primaryKey"`
+		Offer       string `gorm:"primaryKey"`
+		Product     string `gorm:"primaryKey"`
+		PartnerName string
+		Volume      float64
+		Operations  int
 	}
 )
 
@@ -232,6 +243,18 @@ func NewChangelog(i issue.Issue, c issue.Changelog) Changelog {
 		FromStatusID: c.FromStatusID,
 		ToStatusID:   c.ToStatusID,
 		CreatedAt:    c.CreatedAt,
+	}
+}
+
+func NewVolume(v financial.Volume) Volume {
+	return Volume{
+		PartnerID:   v.PartnerID,
+		CreatedAt:   v.CreatedAt,
+		Offer:       v.Offer,
+		Product:     v.Product,
+		PartnerName: v.PartnerName,
+		Volume:      v.Volume,
+		Operations:  v.Operations,
 	}
 }
 
