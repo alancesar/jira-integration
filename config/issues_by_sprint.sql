@@ -7,6 +7,7 @@ select issue.*,
            when (select 1 from json_each(labels) where value = 'Back-End') then 'Back-End'
            when (select 1 from json_each(labels) where value = 'QA') then 'QA'
            when (select 1 from json_each(labels) where value in ('DevOps', 'SRE', 'SRE-DevOps')) then 'DevOps'
+           when issue_type.name in ('Support', 'Bug', 'Sub-bug') then 'Support'
            end             as kind,
        case
            when issue_type.name in ('Support', 'Bug', 'Sub-bug') then 'Operation'
@@ -25,7 +26,7 @@ from issues issue
                      from issue_sprints
                      group by issue_id) last_sprint on issue.id = last_sprint.issue_id
          left join (select c.issue_id,
-                           max(case when c.to_status_id = 10379 then c.created_at end) as started_at,
+                           max(case when c.to_status_id in (10379, 10051) then c.created_at end) as started_at,
                            max(case when c.to_status_id = 10377 then c.created_at end) as committed_at,
                            max(case when c.to_status_id = 10483 then c.created_at end) as tested_at,
                            max(case when c.to_status_id = 10291 then c.created_at end) as finished_at
