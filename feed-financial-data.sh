@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+echo 'running bigquery...'
 bq --format=csv query --use_legacy_sql=false "
 SELECT
   partner_name,
@@ -20,7 +21,7 @@ END
 FROM
   \`bexs-digitalfx.exchange.operations_normalized_latest\`
 WHERE
-  created_at >= DATE_TRUNC(CURRENT_DATE('America/Sao_Paulo'), month)
+  created_at >= DATE_ADD(DATE_TRUNC(CURRENT_DATE('America/Sao_Paulo'), month), INTERVAL -1 month)
   AND status NOT IN ('ABORTED')
 GROUP BY
   partner_name,
@@ -40,4 +41,7 @@ ORDER BY
   1,
   6" > report.csv
 
+echo 'feeding data from csv file...'
 ./financial --source="report.csv"
+echo 'copying database to metabase container...'
+docker cp sqlite.db metabase:/db
