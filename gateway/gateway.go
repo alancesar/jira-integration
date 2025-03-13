@@ -5,17 +5,13 @@ import (
 	"fmt"
 	"jira-integration/pkg/issue"
 	"jira-integration/pkg/jira"
-	"jira-integration/pkg/sprint"
 	"log"
 	"strings"
 )
 
 type (
 	Database interface {
-		SaveIssueType(ctx context.Context, it issue.Type) error
-		SaveStatus(ctx context.Context, s issue.Status) error
 		SaveIssue(ctx context.Context, i issue.Issue) error
-		SaveSprint(ctx context.Context, s sprint.Sprint) error
 		SaveChangelog(ctx context.Context, i issue.Issue, c issue.Changelog) error
 	}
 
@@ -70,18 +66,6 @@ func (g Gateway) SyncIssues(ctx context.Context, args ...string) {
 			}
 		}
 	}
-}
-
-func (g Gateway) SyncSprints(ctx context.Context) error {
-	sprints := g.client.StreamSprints()
-	for s := range sprints {
-		fmt.Println("fetching sprint", s.Name)
-		if err := g.db.SaveSprint(ctx, s); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (g Gateway) Setup(ctx context.Context) error {

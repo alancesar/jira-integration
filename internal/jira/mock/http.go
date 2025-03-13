@@ -18,7 +18,7 @@ func (m MockedRoundTripper) RoundTrip(request *http.Request) (*http.Response, er
 		Status:     http.StatusText(m.statusCode),
 		StatusCode: m.statusCode,
 		Header: http.Header{
-			"Content-Type": {"application/json"},
+			"Content-IssueType": {"application/json"},
 		},
 		Body:          io.NopCloser(strings.NewReader(m.response)),
 		ContentLength: int64(len(m.response)),

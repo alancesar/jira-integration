@@ -5,95 +5,35 @@ import (
 	"gorm.io/datatypes"
 	"jira-integration/pkg/financial"
 	"jira-integration/pkg/issue"
-	"jira-integration/pkg/sprint"
 	"time"
 )
 
 type (
-	Account struct {
-		ID           string `gorm:"primarykey"`
-		EmailAddress string
-		AvatarURL    string
-		DisplayName  string
-		Active       bool
-		TimeZone     string
-		AccountType  string
-	}
-
-	Sprint struct {
-		ID          uint `gorm:"primarykey"`
-		Name        string
-		State       string
-		Goal        string
-		StartedAt   time.Time
-		EndedAt     time.Time
-		CompletedAt time.Time
-	}
-
-	Project struct {
-		ID   uint `gorm:"primarykey"`
-		Key  string
-		Name string
-	}
-
-	Status struct {
-		ID               uint `gorm:"primarykey"`
-		Name             string
-		StatusCategoryID uint
-		StatusCategory   StatusCategory
-	}
-
-	StatusCategory struct {
-		ID   uint `gorm:"primarykey"`
-		Name string
-	}
-
-	IssueType struct {
-		ID          uint `gorm:"primarykey"`
-		Description string
-		Name        string
-		Subtask     bool
-	}
-
-	Product struct {
-		ID   uint `gorm:"primarykey"`
-		Name string
-	}
-
 	Changelog struct {
-		ID           uint `gorm:"primarykey"`
-		Issue        Issue
-		IssueID      uint
-		Author       Account
-		AuthorID     string
-		Field        string
-		FromStatus   Status
-		FromStatusID uint
-		ToStatus     Status
-		ToStatusID   uint
-		CreatedAt    time.Time `gorm:"autoCreateTime:false"`
+		ID        uint `gorm:"primarykey"`
+		IssueID   uint
+		From      string
+		To        string
+		CreatedAt time.Time `gorm:"autoCreateTime:false"`
 	}
 
 	Issue struct {
 		ID          uint   `gorm:"primarykey"`
 		Key         string `gorm:"unique"`
 		Summary     string
-		Project     Project
-		ProjectID   uint
-		StatusID    uint
-		Status      Status
-		IssueTypeID uint
-		IssueType   IssueType
-		ParentID    *uint
-		Parent      *Issue
-		Sprints     []Sprint `gorm:"many2many:issue_sprints"`
+		Status      string
+		IssueType   string
+		Project     string
+		Parent      *string
+		Sprint      *string
 		Labels      datatypes.JSON
-		AssigneeID  *string
-		Assignee    *Account
-		ReporterID  string
-		Reporter    Account
+		Assignee    *string
+		Reporter    string
 		StoryPoints *uint
-		Products    []Product `gorm:"many2many:issue_products"`
+		Products    datatypes.JSON
+		FixVersion  *string
+		Locality    *string
+		Changelog   []Changelog
 		CreatedAt   time.Time `gorm:"autoCreateTime:false"`
 		UpdatedAt   time.Time `gorm:"autoUpdateTime:false"`
 	}
@@ -111,138 +51,42 @@ type (
 
 func NewIssue(i issue.Issue) *Issue {
 	labels, _ := json.Marshal(i.Labels)
+	products, _ := json.Marshal(i.Products)
 
-	output := &Issue{
+	changelog := make([]Changelog, len(i.Changelog), len(i.Changelog))
+	for index, c := range i.Changelog {
+		changelog[index] = NewChangelog(c, i.ID)
+	}
+
+	return &Issue{
 		ID:          i.ID,
 		Key:         i.Key,
 		Summary:     i.Summary,
-		Project:     NewProject(i.Project),
-		ProjectID:   i.Project.ID,
-		StatusID:    i.Status.ID,
-		Status:      NewStatus(i.Status),
-		IssueTypeID: i.Type.ID,
-		IssueType:   NewIssueType(i.Type),
-		Sprints:     NewSprints(i.Sprints),
+		Status:      i.Status,
+		IssueType:   i.IssueType,
+		Project:     i.Project,
+		Parent:      stringToPointer(i.Parent),
+		Sprint:      stringToPointer(i.Sprint),
 		Labels:      labels,
-		ReporterID:  i.Reporter.ID,
-		Reporter:    NewAccount(i.Reporter),
+		Assignee:    stringToPointer(i.Assignee),
+		Reporter:    i.Reporter,
 		StoryPoints: uintToPointer(i.StoryPoints),
-		Products:    NewProducts(i.Product),
+		Products:    products,
+		FixVersion:  stringToPointer(i.FixVersion),
+		Locality:    stringToPointer(i.Locality),
+		Changelog:   changelog,
 		CreatedAt:   i.CreatedAt,
 		UpdatedAt:   i.UpdatedAt,
 	}
-
-	if i.Assignee != nil {
-		assignee := NewAccount(*i.Assignee)
-		output.AssigneeID = &assignee.ID
-		output.Assignee = &assignee
-	}
-
-	if i.Parent != nil {
-		output.Parent = NewIssue(*i.Parent)
-		output.ParentID = uintToPointer(i.Parent.ID)
-	}
-
-	return output
 }
 
-func NewProject(p issue.Project) Project {
-	return Project{
-		ID:   p.ID,
-		Key:  p.Key,
-		Name: p.Name,
-	}
-}
-
-func NewStatus(s issue.Status) Status {
-	return Status{
-		ID:               s.ID,
-		Name:             s.Name,
-		StatusCategoryID: s.Category.ID,
-		StatusCategory:   NewStatusCategory(s.Category),
-	}
-}
-
-func NewStatusCategory(c issue.StatusCategory) StatusCategory {
-	return StatusCategory{
-		ID:   c.ID,
-		Name: c.Name,
-	}
-}
-
-func NewIssueType(i issue.Type) IssueType {
-	return IssueType{
-		ID:          i.ID,
-		Description: i.Description,
-		Name:        i.Name,
-		Subtask:     i.Subtask,
-	}
-}
-
-func NewSprint(s sprint.Sprint) Sprint {
-	return Sprint{
-		ID:          s.ID,
-		Name:        s.Name,
-		State:       string(s.State),
-		Goal:        s.Goal,
-		StartedAt:   s.StartedAt,
-		EndedAt:     s.EndedAt,
-		CompletedAt: s.CompletedAt,
-	}
-}
-
-func NewSprints(sprints []sprint.Sprint) []Sprint {
-	output := make([]Sprint, len(sprints), len(sprints))
-	for i := range sprints {
-		output[i] = NewSprint(sprints[i])
-	}
-
-	return output
-}
-
-func NewProduct(p issue.Product) Product {
-	return Product{
-		ID:   p.ID,
-		Name: p.Name,
-	}
-}
-
-func NewProducts(products []issue.Product) []Product {
-	if products == nil {
-		return nil
-	}
-
-	output := make([]Product, len(products), len(products))
-	for i := range products {
-		output[i] = NewProduct(products[i])
-	}
-
-	return output
-}
-
-func NewAccount(a issue.Account) Account {
-	return Account{
-		ID:           a.ID,
-		EmailAddress: a.EmailAddress,
-		AvatarURL:    a.AvatarURL,
-		DisplayName:  a.DisplayName,
-		Active:       a.Active,
-		TimeZone:     a.TimeZone,
-		AccountType:  a.AccountType,
-	}
-}
-
-func NewChangelog(i issue.Issue, c issue.Changelog) Changelog {
+func NewChangelog(c issue.Changelog, issueID uint) Changelog {
 	return Changelog{
-		ID:           c.ID,
-		IssueID:      i.ID,
-		Issue:        *NewIssue(i),
-		Author:       NewAccount(c.Author),
-		AuthorID:     c.Author.ID,
-		Field:        string(c.Field),
-		FromStatusID: c.FromStatusID,
-		ToStatusID:   c.ToStatusID,
-		CreatedAt:    c.CreatedAt,
+		ID:        c.ID,
+		IssueID:   issueID,
+		From:      c.From,
+		To:        c.To,
+		CreatedAt: c.CreatedAt,
 	}
 }
 
@@ -256,6 +100,14 @@ func NewVolume(v financial.Volume) Volume {
 		Volume:      v.Volume,
 		Operations:  v.Operations,
 	}
+}
+
+func stringToPointer(value string) *string {
+	if value == "" {
+		return nil
+	}
+
+	return &value
 }
 
 func uintToPointer(value uint) *uint {

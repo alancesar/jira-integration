@@ -1,7 +1,6 @@
 package issue
 
 import (
-	"jira-integration/pkg/sprint"
 	"time"
 )
 
@@ -10,71 +9,32 @@ const (
 )
 
 type (
-	Project struct {
-		ID   uint   `json:"id"`
-		Key  string `json:"key"`
-		Name string `json:"name,omitempty"`
-	}
-
-	Product struct {
-		ID   uint
-		Name string
-	}
-
-	Type struct {
-		ID          uint
-		Description string
-		Name        string
-		Subtask     bool
-	}
-
-	Status struct {
-		ID       uint
-		Name     string
-		Category StatusCategory
-	}
-
-	StatusCategory struct {
-		ID   uint
-		Name string
-	}
-
-	Account struct {
-		ID           string
-		EmailAddress string
-		AvatarURL    string
-		DisplayName  string
-		Active       bool
-		TimeZone     string
-		AccountType  string
-	}
-
-	ChangelogField string
-
 	Changelog struct {
-		ID           uint
-		Author       Account
-		Field        ChangelogField
-		FromStatusID uint
-		ToStatusID   uint
-		CreatedAt    time.Time
+		ID        uint      `json:"id"`
+		Author    string    `json:"author"`
+		From      string    `json:"from"`
+		To        string    `json:"to"`
+		CreatedAt time.Time `json:"created_at"`
 	}
 
 	Issue struct {
-		ID          uint
-		Key         string
-		Summary     string
-		Status      Status
-		Type        Type
-		Project     Project
-		Parent      *Issue
-		Sprints     []sprint.Sprint
-		Labels      []string
-		Assignee    *Account
-		Reporter    Account
-		StoryPoints uint
-		Product     []Product
-		CreatedAt   time.Time
-		UpdatedAt   time.Time
+		ID          uint        `json:"id"`
+		Key         string      `json:"key"`
+		Summary     string      `json:"summary"`
+		Status      string      `json:"status"`
+		IssueType   string      `json:"issue_type"`
+		Project     string      `json:"project"`
+		Parent      string      `json:"parent,omitempty"`
+		Sprint      string      `json:"sprint,omitempty"`
+		Labels      []string    `json:"labels,omitempty"`
+		Assignee    string      `json:"assignee,omitempty"`
+		Reporter    string      `json:"reporter,omitempty"`
+		StoryPoints uint        `json:"story_points,omitempty"`
+		Products    []string    `json:"products,omitempty"`
+		FixVersion  string      `json:"fix_version,omitempty"`
+		Locality    string      `json:"locality"`
+		Changelog   []Changelog `json:"changelog,omitempty"`
+		CreatedAt   time.Time   `json:"created_at"`
+		UpdatedAt   time.Time   `json:"updated_at"`
 	}
 )

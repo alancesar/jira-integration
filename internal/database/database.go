@@ -6,7 +6,6 @@ import (
 	"jira-integration/internal/database/model"
 	"jira-integration/pkg/financial"
 	"jira-integration/pkg/issue"
-	"jira-integration/pkg/sprint"
 	"log"
 	"time"
 )
@@ -19,12 +18,6 @@ type (
 
 func NewSQLite(db *gorm.DB) *SQLite {
 	if err := db.AutoMigrate(
-		&model.Project{},
-		&model.StatusCategory{},
-		&model.Status{},
-		&model.IssueType{},
-		&model.Sprint{},
-		&model.Product{},
 		&model.Changelog{},
 		&model.Issue{},
 		&model.Volume{},
@@ -38,13 +31,12 @@ func NewSQLite(db *gorm.DB) *SQLite {
 }
 
 func (l SQLite) SaveIssue(ctx context.Context, i issue.Issue) error {
-	if exists, err := l.issueExists(ctx, i); err != nil {
+	m := model.NewIssue(i)
+	if err := l.db.WithContext(ctx).Save(m).Error; err != nil {
 		return err
-	} else if exists {
-		return l.updateIssue(ctx, i)
 	}
 
-	return l.insertIssue(ctx, i)
+	return nil
 }
 
 func (l SQLite) GetLastUpdate(ctx context.Context) (time.Time, error) {
@@ -65,30 +57,6 @@ func (l SQLite) GetLastUpdate(ctx context.Context) (time.Time, error) {
 	return parsed, nil
 }
 
-func (l SQLite) SaveIssueType(ctx context.Context, it issue.Type) error {
-	m := model.NewIssueType(it)
-	tx := l.db.WithContext(ctx).Save(&m)
-	return tx.Error
-}
-
-func (l SQLite) SaveStatus(ctx context.Context, s issue.Status) error {
-	m := model.NewStatus(s)
-	tx := l.db.WithContext(ctx).Save(&m)
-	return tx.Error
-}
-
-func (l SQLite) SaveSprint(ctx context.Context, s sprint.Sprint) error {
-	m := model.NewSprint(s)
-	tx := l.db.WithContext(ctx).Save(&m)
-	return tx.Error
-}
-
-func (l SQLite) SaveChangelog(ctx context.Context, i issue.Issue, c issue.Changelog) error {
-	m := model.NewChangelog(i, c)
-	tx := l.db.WithContext(ctx).Save(&m)
-	return tx.Error
-}
-
 func (l SQLite) SaveFinancial(ctx context.Context, v financial.Volume) error {
 	m := model.NewVolume(v)
 	tx := l.db.WithContext(ctx).Save(&m)
@@ -104,28 +72,4 @@ func (l SQLite) issueExists(ctx context.Context, i issue.Issue) (bool, error) {
 		Find(&exists)
 
 	return exists, tx.Error
-}
-
-func (l SQLite) insertIssue(ctx context.Context, i issue.Issue) error {
-	m := model.NewIssue(i)
-	tx := l.db.Omit("Parent").WithContext(ctx).Create(&m)
-	return tx.Error
-}
-
-func (l SQLite) updateIssue(ctx context.Context, i issue.Issue) error {
-	m := model.NewIssue(i)
-	sprints := m.Sprints
-	if err := l.db.Model(&m).Association("Sprints").Clear(); err != nil {
-		return err
-	}
-
-	products := m.Products
-	if err := l.db.Model(&m).Association("Products").Clear(); err != nil {
-		return err
-	}
-
-	m.Sprints = sprints
-	m.Products = products
-	tx := l.db.Omit("Parent").WithContext(ctx).Save(&m)
-	return tx.Error
 }
