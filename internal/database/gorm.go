@@ -10,12 +10,12 @@ import (
 )
 
 type (
-	SQLite struct {
+	Gorm struct {
 		db *gorm.DB
 	}
 )
 
-func NewGorm(db *gorm.DB) *SQLite {
+func NewGorm(db *gorm.DB) *Gorm {
 	if err := db.AutoMigrate(
 		&model.Issue{},
 		&model.Changelog{},
@@ -23,12 +23,12 @@ func NewGorm(db *gorm.DB) *SQLite {
 		log.Fatalln("while running auto migrate", err)
 	}
 
-	return &SQLite{
+	return &Gorm{
 		db: db,
 	}
 }
 
-func (l SQLite) CreateIssue(ctx context.Context, i issue.Issue) error {
+func (l Gorm) CreateIssue(ctx context.Context, i issue.Issue) error {
 	m := model.NewIssue(i)
 	if err := l.db.WithContext(ctx).Create(m).Error; err != nil {
 		return err
@@ -37,7 +37,7 @@ func (l SQLite) CreateIssue(ctx context.Context, i issue.Issue) error {
 	return nil
 }
 
-func (l SQLite) UpdateIssue(ctx context.Context, i issue.Issue) error {
+func (l Gorm) UpdateIssue(ctx context.Context, i issue.Issue) error {
 	m := model.NewIssue(i)
 	if err := l.db.WithContext(ctx).Save(m).Error; err != nil {
 		return err
@@ -46,7 +46,7 @@ func (l SQLite) UpdateIssue(ctx context.Context, i issue.Issue) error {
 	return nil
 }
 
-func (l SQLite) IssueExistsByKey(ctx context.Context, issueKey string) (bool, error) {
+func (l Gorm) IssueExistsByKey(ctx context.Context, issueKey string) (bool, error) {
 	err := l.db.WithContext(ctx).
 		Where("key = ?", issueKey).
 		First(&model.Issue{}).Error
