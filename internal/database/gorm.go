@@ -29,26 +29,26 @@ func NewGorm(db *gorm.DB) *Gorm {
 	}
 }
 
-func (l Gorm) CreateIssue(ctx context.Context, i issue.Issue) error {
+func (g Gorm) CreateIssue(ctx context.Context, i issue.Issue) error {
 	m := model.NewIssue(i)
-	if err := l.db.WithContext(ctx).Create(m).Error; err != nil {
+	if err := g.db.WithContext(ctx).Create(m).Error; err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (l Gorm) UpdateIssue(ctx context.Context, i issue.Issue) error {
+func (g Gorm) UpdateIssue(ctx context.Context, i issue.Issue) error {
 	m := model.NewIssue(i)
-	if err := l.db.WithContext(ctx).Save(m).Error; err != nil {
+	if err := g.db.WithContext(ctx).Save(m).Error; err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (l Gorm) IssueExistsByKey(ctx context.Context, issueKey string) (bool, error) {
-	err := l.db.WithContext(ctx).
+func (g Gorm) IssueExistsByKey(ctx context.Context, issueKey string) (bool, error) {
+	err := g.db.WithContext(ctx).
 		Where("key = ?", issueKey).
 		First(&model.Issue{}).Error
 
