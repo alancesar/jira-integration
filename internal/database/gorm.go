@@ -19,6 +19,7 @@ func NewGorm(db *gorm.DB) *Gorm {
 	if err := db.AutoMigrate(
 		&model.Issue{},
 		&model.Changelog{},
+		&model.Sprint{},
 	); err != nil {
 		log.Fatalln("while running auto migrate", err)
 	}
