@@ -21,6 +21,10 @@ var (
 func init() {
 	flag.StringVar(&jql, "jql", "", "JQL query")
 	flag.Parse()
+
+	if jql == "" {
+		log.Fatalln("jql query is required")
+	}
 }
 
 func main() {
