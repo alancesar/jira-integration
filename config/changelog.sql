@@ -1,6 +1,6 @@
 create or replace view issues_changelog as
 (
-select issues.id as issue_id,
+select issues.id as               issue_id,
        min(started_at.created_at) started_at,
        max(done_at.created_at)    done_at
 from issues
