@@ -17,6 +17,8 @@ type (
 
 func NewGorm(db *gorm.DB) *Gorm {
 	if err := db.AutoMigrate(
+		&model.Label{},
+		&model.Product{},
 		&model.Issue{},
 		&model.Changelog{},
 		&model.Sprint{},

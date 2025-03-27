@@ -1,13 +1,21 @@
 package model
 
 import (
-	"encoding/json"
-	"gorm.io/datatypes"
 	"jira-integration/pkg/issue"
 	"time"
 )
 
 type (
+	Label struct {
+		ID   string `gorm:"primarykey"`
+		Name string `gorm:"unique"`
+	}
+
+	Product struct {
+		ID   uint   `gorm:"primarykey"`
+		Name string `gorm:"unique"`
+	}
+
 	Changelog struct {
 		ID        uint `gorm:"primarykey"`
 		IssueID   uint
@@ -37,11 +45,11 @@ type (
 		Parent      *Issue
 		SprintID    *uint
 		Sprint      *Sprint
-		Labels      datatypes.JSON
+		Labels      []Label `gorm:"many2many:issue_labels;"`
 		Assignee    *string
 		Reporter    string
 		StoryPoints *uint
-		Products    datatypes.JSON
+		Products    []Product `gorm:"many2many:issue_products;"`
 		FixVersion  *string
 		Locality    *string
 		Changelog   []Changelog
@@ -51,14 +59,21 @@ type (
 )
 
 func NewIssue(i issue.Issue) *Issue {
-	labels, _ := json.Marshal(i.Labels)
-	products, _ := json.Marshal(i.Products)
-
 	var parent *Issue
 	var parentID *uint
 	if i.Parent != nil {
 		parent = NewIssue(*i.Parent)
 		parentID = &parent.ID
+	}
+
+	labels := make([]Label, len(i.Labels), len(i.Labels))
+	for index, label := range i.Labels {
+		labels[index] = NewLabel(label)
+	}
+
+	products := make([]Product, len(i.Products), len(i.Products))
+	for index, product := range i.Products {
+		products[index] = NewProduct(product)
 	}
 
 	changelog := make([]Changelog, len(i.Changelog), len(i.Changelog))
@@ -92,6 +107,20 @@ func NewIssue(i issue.Issue) *Issue {
 		Changelog:   changelog,
 		CreatedAt:   i.CreatedAt,
 		UpdatedAt:   i.UpdatedAt,
+	}
+}
+
+func NewLabel(l issue.Label) Label {
+	return Label{
+		ID:   l.Hash(),
+		Name: string(l),
+	}
+}
+
+func NewProduct(p issue.Product) Product {
+	return Product{
+		ID:   p.ID,
+		Name: p.Name,
 	}
 }
 

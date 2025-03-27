@@ -205,7 +205,7 @@ func (i Issue) ToDomain() issue.Issue {
 		Status:      i.Fields.Status.Name,
 		IssueType:   i.Fields.IssueType.Name,
 		Project:     i.Fields.Project.Name,
-		Labels:      i.Fields.Labels,
+		Labels:      issue.NewLabels(i.Fields.Labels),
 		Reporter:    i.Fields.Reporter.EmailAddress,
 		StoryPoints: uint(i.Fields.StoryPoints),
 		Locality:    i.Fields.Locality.Value,
@@ -228,9 +228,12 @@ func (i Issue) ToDomain() issue.Issue {
 	}
 
 	if len(i.Fields.Product) != 0 {
-		output.Products = make([]string, len(i.Fields.Product), len(i.Fields.Product))
+		output.Products = make([]issue.Product, len(i.Fields.Product), len(i.Fields.Product))
 		for index, product := range i.Fields.Product {
-			output.Products[index] = product.Value
+			output.Products[index] = issue.Product{
+				ID:   stringToUint(product.ID),
+				Name: product.Value,
+			}
 		}
 	}
 
