@@ -34,6 +34,15 @@ type (
 		CompletedAt time.Time
 	}
 
+	Account struct {
+		ID           string `gorm:"primarykey"`
+		EmailAddress string
+		AvatarURL    string
+		DisplayName  string
+		Active       bool
+		AccountType  string
+	}
+
 	Issue struct {
 		ID          uint   `gorm:"primarykey"`
 		Key         string `gorm:"unique"`
@@ -46,8 +55,10 @@ type (
 		SprintID    *uint
 		Sprint      *Sprint
 		Labels      []Label `gorm:"many2many:issue_labels;"`
-		Assignee    *string
-		Reporter    string
+		AssigneeID  *string
+		Assignee    *Account
+		ReporterID  string
+		Reporter    Account
 		StoryPoints *uint
 		Products    []Product `gorm:"many2many:issue_products;"`
 		FixVersion  *string
@@ -86,6 +97,12 @@ func NewIssue(i issue.Issue) *Issue {
 		sprintID = &i.Sprint.ID
 	}
 
+	var assigneeID *string
+	assignee := NewAccount(i.Assignee)
+	if assignee != nil {
+		assigneeID = &assignee.ID
+	}
+
 	return &Issue{
 		ID:          i.ID,
 		Key:         i.Key,
@@ -98,8 +115,10 @@ func NewIssue(i issue.Issue) *Issue {
 		SprintID:    sprintID,
 		Sprint:      NewSprint(i.Sprint),
 		Labels:      labels,
-		Assignee:    stringToPointer(i.Assignee),
-		Reporter:    i.Reporter,
+		AssigneeID:  assigneeID,
+		Assignee:    assignee,
+		ReporterID:  i.Reporter.ID,
+		Reporter:    *NewAccount(&i.Reporter),
 		StoryPoints: uintToPointer(i.StoryPoints),
 		Products:    products,
 		FixVersion:  stringToPointer(i.FixVersion),
@@ -147,6 +166,21 @@ func NewSprint(sprint *issue.Sprint) *Sprint {
 		StartedAt:   sprint.StartedAt,
 		EndedAt:     sprint.EndedAt,
 		CompletedAt: sprint.CompletedAt,
+	}
+}
+
+func NewAccount(a *issue.Account) *Account {
+	if a == nil {
+		return nil
+	}
+
+	return &Account{
+		ID:           a.ID,
+		EmailAddress: a.EmailAddress,
+		AvatarURL:    a.AvatarURL,
+		DisplayName:  a.DisplayName,
+		Active:       a.Active,
+		AccountType:  a.AccountType,
 	}
 }
 

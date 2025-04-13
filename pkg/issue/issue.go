@@ -27,9 +27,18 @@ type (
 		Name        string    `json:"name"`
 		State       string    `json:"state"`
 		Goal        string    `json:"goal"`
-		StartedAt   time.Time `json:"startDate"`
-		EndedAt     time.Time `json:"endDate"`
-		CompletedAt time.Time `json:"completeDate,omitempty"`
+		StartedAt   time.Time `json:"start_date"`
+		EndedAt     time.Time `json:"end_date"`
+		CompletedAt time.Time `json:"complete_date,omitempty"`
+	}
+
+	Account struct {
+		ID           string `json:"id"`
+		EmailAddress string `json:"email_address"`
+		AvatarURL    string `json:"avatar_url"`
+		DisplayName  string `json:"display_name"`
+		Active       bool   `json:"active"`
+		AccountType  string `json:"account_type"`
 	}
 
 	Issue struct {
@@ -42,8 +51,8 @@ type (
 		Parent      *Issue      `json:"parent,omitempty"`
 		Sprint      *Sprint     `json:"sprint,omitempty"`
 		Labels      []Label     `json:"labels,omitempty"`
-		Assignee    string      `json:"assignee,omitempty"`
-		Reporter    string      `json:"reporter,omitempty"`
+		Assignee    *Account    `json:"assignee,omitempty"`
+		Reporter    Account     `json:"reporter"`
 		StoryPoints uint        `json:"story_points,omitempty"`
 		Products    []Product   `json:"products,omitempty"`
 		FixVersion  string      `json:"fix_version,omitempty"`

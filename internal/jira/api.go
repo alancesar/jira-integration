@@ -6,9 +6,27 @@ import (
 	"time"
 )
 
+const (
+	AvatarSize48x48 = "48x48"
+	AvatarSize32x32 = "32x32"
+	AvatarSize24x24 = "24x24"
+	AvatarSize16x16 = "16x16"
+)
+
+var (
+	avatarSizes = []AvatarSize{
+		AvatarSize48x48,
+		AvatarSize32x32,
+		AvatarSize24x24,
+		AvatarSize16x16,
+	}
+)
+
 type (
 	Date     time.Time
 	DateTime time.Time
+
+	AvatarSize string
 )
 
 type (
@@ -55,7 +73,7 @@ type (
 		ColorName string `json:"colorName"`
 	}
 
-	AvatarURLs map[string]string
+	AvatarURLs map[AvatarSize]string
 
 	Account struct {
 		Self         string     `json:"self"`
@@ -206,7 +224,7 @@ func (i Issue) ToDomain() issue.Issue {
 		IssueType:   i.Fields.IssueType.Name,
 		Project:     i.Fields.Project.Name,
 		Labels:      issue.NewLabels(i.Fields.Labels),
-		Reporter:    i.Fields.Reporter.EmailAddress,
+		Reporter:    i.Fields.Reporter.ToDomain(),
 		StoryPoints: uint(i.Fields.StoryPoints),
 		Locality:    i.Fields.Locality.Value,
 		Changelog:   nil,
@@ -220,7 +238,8 @@ func (i Issue) ToDomain() issue.Issue {
 	}
 
 	if i.Fields.Assignee != nil {
-		output.Assignee = i.Fields.Assignee.EmailAddress
+		assignee := i.Fields.Assignee.ToDomain()
+		output.Assignee = &assignee
 	}
 
 	if len(i.Fields.Sprints) != 0 {
@@ -318,6 +337,27 @@ func (s Sprint) ToDomain() *issue.Sprint {
 		StartedAt:   s.StartDate,
 		EndedAt:     s.EndDate,
 		CompletedAt: s.CompleteDate,
+	}
+}
+
+func (a AvatarURLs) GetLargest() string {
+	for _, size := range avatarSizes {
+		if url, ok := a[size]; ok {
+			return url
+		}
+	}
+
+	return ""
+}
+
+func (a Account) ToDomain() issue.Account {
+	return issue.Account{
+		ID:           a.AccountID,
+		EmailAddress: a.EmailAddress,
+		AvatarURL:    a.AvatarURLs.GetLargest(),
+		DisplayName:  a.DisplayName,
+		Active:       a.Active,
+		AccountType:  a.AccountType,
 	}
 }
 
