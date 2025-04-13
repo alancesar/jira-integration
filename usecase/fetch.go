@@ -35,18 +35,18 @@ func (uc FetchUseCase) Execute(ctx context.Context, issueKeyOrID string) error {
 	fmt.Println("fetching", issueKeyOrID)
 	issueFromClient, err := uc.client.GetIssueByKeyOrID(ctx, issueKeyOrID)
 	if err != nil {
-		return fmt.Errorf("while fetching issue from streamer: %w", err)
+		return fmt.Errorf("while fetching issue %s from streamer: %w", issueKeyOrID, err)
 	}
 
 	changelog, _, err := uc.client.GetIssueChangelog(ctx, issueFromClient.Key, "")
 	if err != nil {
-		return fmt.Errorf("while fetching issue changelog: %w", err)
+		return fmt.Errorf("while fetching issue %s changelog: %w", issueKeyOrID, err)
 	}
 
 	issueFromClient.Changelog = changelog
 
 	if exist, err := uc.db.IssueExistsByKey(ctx, issueFromClient.Key); err != nil {
-		return fmt.Errorf("while checking if issue exists: %w", err)
+		return fmt.Errorf("while checking if issue %s exists: %w", issueKeyOrID, err)
 	} else if exist {
 		return uc.updateIssue(ctx, issueFromClient)
 	}
@@ -56,7 +56,7 @@ func (uc FetchUseCase) Execute(ctx context.Context, issueKeyOrID string) error {
 
 func (uc FetchUseCase) createIssue(ctx context.Context, issueFromClient issue.Issue) error {
 	if err := uc.db.CreateIssue(ctx, issueFromClient); err != nil {
-		return fmt.Errorf("while creaing issue to db: %w", err)
+		return fmt.Errorf("while creaing issue %s to db: %w", issueFromClient.Key, err)
 	}
 
 	return nil
@@ -64,7 +64,7 @@ func (uc FetchUseCase) createIssue(ctx context.Context, issueFromClient issue.Is
 
 func (uc FetchUseCase) updateIssue(ctx context.Context, issueFromClient issue.Issue) error {
 	if err := uc.db.UpdateIssue(ctx, issueFromClient); err != nil {
-		return fmt.Errorf("while updating issue to db: %w", err)
+		return fmt.Errorf("while updating issue %s to db: %w", issueFromClient.Key, err)
 	}
 
 	return nil
