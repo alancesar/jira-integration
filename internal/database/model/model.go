@@ -34,6 +34,8 @@ type (
 		CompletedAt time.Time
 	}
 
+	Sprints []Sprint
+
 	Account struct {
 		ID           string `gorm:"primarykey"`
 		EmailAddress string
@@ -68,6 +70,27 @@ type (
 		UpdatedAt   time.Time `gorm:"autoUpdateTime:false"`
 	}
 )
+
+func (s Sprint) ToDomain() issue.Sprint {
+	return issue.Sprint{
+		ID:          s.ID,
+		Name:        s.Name,
+		State:       s.State,
+		Goal:        s.Goal,
+		StartedAt:   s.StartedAt,
+		EndedAt:     s.EndedAt,
+		CompletedAt: s.CompletedAt,
+	}
+}
+
+func (s Sprints) ToDomain() []issue.Sprint {
+	output := make([]issue.Sprint, len(s), len(s))
+	for i, sprint := range s {
+		output[i] = sprint.ToDomain()
+	}
+
+	return output
+}
 
 func NewIssue(i issue.Issue) *Issue {
 	var parent *Issue

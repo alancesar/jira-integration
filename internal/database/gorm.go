@@ -65,3 +65,21 @@ func (g Gorm) IssueExistsByKey(ctx context.Context, issueKey string) (bool, erro
 
 	return true, nil
 }
+
+func (g Gorm) GetSprintsByState(ctx context.Context, states []string) ([]issue.Sprint, error) {
+	var sprints []model.Sprint
+	if err := g.db.WithContext(ctx).Where("state in (?)", states).Find(&sprints).Error; err != nil {
+		return nil, err
+	}
+
+	return model.Sprints(sprints).ToDomain(), nil
+}
+
+func (g Gorm) SaveSprint(ctx context.Context, sprint issue.Sprint) error {
+	m := model.NewSprint(&sprint)
+	if err := g.db.WithContext(ctx).Save(m).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
