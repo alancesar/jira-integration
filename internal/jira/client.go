@@ -13,6 +13,7 @@ import (
 
 const (
 	jiraCloudAPIBasePath = "https://bexs.atlassian.net/rest/api/3"
+	jiraAgileAPIBasePath = "https://bexs.atlassian.net/rest/agile/1.0"
 	defaultMaxResults    = 500
 )
 
@@ -156,4 +157,27 @@ func (c Client) GetIssueChangelog(_ context.Context, issueKey, nextPageToken str
 	}
 
 	return output.ToDomain(), output.NextPageToken, nil
+}
+
+func (c Client) GetSprint(_ context.Context, sprintID uint) (*issue.Sprint, error) {
+	baseURL := fmt.Sprintf("%s/sprint/%d", jiraAgileAPIBasePath, sprintID)
+	response, err := c.httpClient.Get(baseURL)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		_ = response.Body.Close()
+	}()
+
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%w: %s: %d", BadStatusErr, baseURL, response.StatusCode)
+	}
+
+	var output Sprint
+	if err := json.NewDecoder(response.Body).Decode(&output); err != nil {
+		return nil, err
+	}
+
+	return output.ToDomain(), nil
 }
