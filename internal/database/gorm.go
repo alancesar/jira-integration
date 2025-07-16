@@ -50,9 +50,9 @@ func (g Gorm) UpdateIssue(ctx context.Context, i issue.Issue) error {
 	return nil
 }
 
-func (g Gorm) IssueExistsByKey(ctx context.Context, issueKey string) (bool, error) {
+func (g Gorm) IssueExists(ctx context.Context, i issue.Issue) (bool, error) {
 	err := g.db.WithContext(ctx).
-		Where("key = ?", issueKey).
+		Where("id = ? OR key = ?", i.ID, i.Key).
 		First(&model.Issue{}).Error
 
 	if err != nil {

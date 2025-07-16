@@ -15,7 +15,7 @@ type (
 	IssueDatabase interface {
 		CreateIssue(ctx context.Context, i issue.Issue) error
 		UpdateIssue(ctx context.Context, i issue.Issue) error
-		IssueExistsByKey(ctx context.Context, issueKey string) (bool, error)
+		IssueExists(ctx context.Context, i issue.Issue) (bool, error)
 	}
 
 	FetchUseCase struct {
@@ -45,7 +45,7 @@ func (uc FetchUseCase) Execute(ctx context.Context, issueKeyOrID string) error {
 
 	issueFromClient.Changelog = changelog
 
-	if exist, err := uc.db.IssueExistsByKey(ctx, issueFromClient.Key); err != nil {
+	if exist, err := uc.db.IssueExists(ctx, issueFromClient); err != nil {
 		return fmt.Errorf("while checking if issue %s exists: %w", issueKeyOrID, err)
 	} else if exist {
 		return uc.updateIssue(ctx, issueFromClient)
