@@ -217,8 +217,12 @@ func NewJQLSearchRequest(jql, nextPageToken string) SearchRequest {
 
 func (i Issue) ToDomain() issue.Issue {
 	output := issue.Issue{
-		ID:          stringToUint(i.ID),
-		Key:         i.Key,
+		Stamp: issue.Stamp{
+			ID:        stringToUint(i.ID),
+			Key:       i.Key,
+			CreatedAt: time.Time(i.Fields.Created),
+			UpdatedAt: time.Time(i.Fields.Updated),
+		},
 		Summary:     i.Fields.Summary,
 		Status:      i.Fields.Status.Name,
 		IssueType:   i.Fields.IssueType.Name,
@@ -228,8 +232,6 @@ func (i Issue) ToDomain() issue.Issue {
 		StoryPoints: uint(i.Fields.StoryPoints),
 		Locality:    i.Fields.Locality.Value,
 		Changelog:   nil,
-		CreatedAt:   time.Time(i.Fields.Created),
-		UpdatedAt:   time.Time(i.Fields.Updated),
 	}
 
 	if i.Fields.Parent != nil {

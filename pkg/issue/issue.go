@@ -41,9 +41,15 @@ type (
 		AccountType  string `json:"account_type"`
 	}
 
+	Stamp struct {
+		ID        uint      `json:"id"`
+		Key       string    `json:"key"`
+		CreatedAt time.Time `json:"created_at"`
+		UpdatedAt time.Time `json:"updated_at"`
+	}
+
 	Issue struct {
-		ID          uint        `json:"id"`
-		Key         string      `json:"key"`
+		Stamp
 		Summary     string      `json:"summary"`
 		Status      string      `json:"status"`
 		IssueType   string      `json:"issue_type"`
@@ -58,8 +64,6 @@ type (
 		FixVersion  string      `json:"fix_version,omitempty"`
 		Locality    string      `json:"locality"`
 		Changelog   []Changelog `json:"changelog,omitempty"`
-		CreatedAt   time.Time   `json:"created_at"`
-		UpdatedAt   time.Time   `json:"updated_at"`
 	}
 )
 
