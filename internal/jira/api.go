@@ -322,9 +322,9 @@ func (f FixVersions) GetLast() FixVersion {
 	return last
 }
 
-func (s Sprints) GetLast() *Sprint {
+func (s Sprints) GetLast() Sprint {
 	if len(s) == 0 {
-		return nil
+		return Sprint{}
 	}
 
 	last := s[0]
@@ -334,7 +334,7 @@ func (s Sprints) GetLast() *Sprint {
 		}
 	}
 
-	return &last
+	return last
 }
 
 func (s Sprint) ToDomain() *issue.Sprint {
