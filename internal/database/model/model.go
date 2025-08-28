@@ -47,7 +47,7 @@ type (
 
 	Issue struct {
 		ID          uint   `gorm:"primarykey"`
-		Key         string `gorm:"unique"`
+		Key         string `gorm:"index,unique"`
 		Summary     string
 		Status      string
 		IssueType   string
