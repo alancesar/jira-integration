@@ -3,10 +3,11 @@ package database
 import (
 	"context"
 	"errors"
-	"gorm.io/gorm"
 	"jira-integration/internal/database/model"
 	"jira-integration/pkg/issue"
 	"log"
+
+	"gorm.io/gorm"
 )
 
 type (
@@ -50,20 +51,22 @@ func (g Gorm) UpdateIssue(ctx context.Context, i issue.Issue) error {
 	return nil
 }
 
-func (g Gorm) IssueExists(ctx context.Context, i issue.Issue) (bool, error) {
-	err := g.db.WithContext(ctx).
-		Where("id = ? OR key = ?", i.ID, i.Key).
-		First(&model.Issue{}).Error
-
-	if err != nil {
+func (g Gorm) GetByID(ctx context.Context, issueID uint) (issue.Stamp, bool, error) {
+	m := &model.Issue{}
+	if err := g.db.WithContext(ctx).First(m, "id = ?", issueID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, nil
+			return issue.Stamp{}, false, nil
 		}
 
-		return false, err
+		return issue.Stamp{}, false, err
 	}
 
-	return true, nil
+	return issue.Stamp{
+		ID:        m.ID,
+		Key:       m.Key,
+		CreatedAt: m.CreatedAt,
+		UpdatedAt: m.UpdatedAt,
+	}, true, nil
 }
 
 func (g Gorm) GetSprintsByState(ctx context.Context, states []string) ([]issue.Sprint, error) {

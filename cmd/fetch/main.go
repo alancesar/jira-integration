@@ -4,15 +4,16 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 	"jira-integration/internal/database"
 	"jira-integration/internal/jira"
 	"jira-integration/usecase"
 	"log"
 	"net/http"
 	"os"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var (
@@ -45,7 +46,7 @@ func main() {
 
 	postgresDB := database.NewGorm(conn)
 	fetchUseCase := usecase.NewFetchUseCase(jiraClient, postgresDB)
-	streamUseCase := usecase.NewStreamUseCase(jiraClient, fetchUseCase.Execute)
+	streamUseCase := usecase.NewStreamUseCase(jiraClient, fetchUseCase.Execute, postgresDB)
 	fmt.Println("fetching issues with JQL:", jql)
 	if err := streamUseCase.Execute(ctx, jql); err != nil {
 		log.Fatalln(err)

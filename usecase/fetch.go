@@ -8,14 +8,14 @@ import (
 
 type (
 	IssueClient interface {
-		GetIssueByKeyOrID(ctx context.Context, issueKeyOrID string) (issue.Issue, error)
+		GetIssueByID(ctx context.Context, issueKeyOrID uint) (issue.Issue, error)
 		GetIssueChangelog(ctx context.Context, issueKeyOrID, nextPageToken string) ([]issue.Changelog, string, error)
 	}
 
 	IssueDatabase interface {
+		StampDatabase
 		CreateIssue(ctx context.Context, i issue.Issue) error
 		UpdateIssue(ctx context.Context, i issue.Issue) error
-		IssueExists(ctx context.Context, i issue.Issue) (bool, error)
 	}
 
 	FetchUseCase struct {
@@ -31,22 +31,22 @@ func NewFetchUseCase(client IssueClient, db IssueDatabase) *FetchUseCase {
 	}
 }
 
-func (uc FetchUseCase) Execute(ctx context.Context, issueKeyOrID string) error {
-	fmt.Println("fetching", issueKeyOrID)
-	issueFromClient, err := uc.client.GetIssueByKeyOrID(ctx, issueKeyOrID)
+func (uc FetchUseCase) Execute(ctx context.Context, issueID uint) error {
+	fmt.Println("fetching", issueID)
+	issueFromClient, err := uc.client.GetIssueByID(ctx, issueID)
 	if err != nil {
-		return fmt.Errorf("while fetching issue %s from streamer: %w", issueKeyOrID, err)
+		return fmt.Errorf("while fetching issue %d from streamer: %w", issueID, err)
 	}
 
 	changelog, _, err := uc.client.GetIssueChangelog(ctx, issueFromClient.Key, "")
 	if err != nil {
-		return fmt.Errorf("while fetching issue %s changelog: %w", issueKeyOrID, err)
+		return fmt.Errorf("while fetching issue %d changelog: %w", issueID, err)
 	}
 
 	issueFromClient.Changelog = changelog
 
-	if exist, err := uc.db.IssueExists(ctx, issueFromClient); err != nil {
-		return fmt.Errorf("while checking if issue %s exists: %w", issueKeyOrID, err)
+	if _, exist, err := uc.db.GetByID(ctx, issueID); err != nil {
+		return fmt.Errorf("while checking if issue %d exists: %w", issueID, err)
 	} else if exist {
 		return uc.updateIssue(ctx, issueFromClient)
 	}

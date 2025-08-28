@@ -178,13 +178,15 @@ type (
 		IssueChangeLogs []IssueChangelog `json:"issueChangeLogs"`
 	}
 
-	SimplifiedIssue struct {
-		ID string `json:"id"`
+	SearchResponseIssue struct {
+		ID     string `json:"id"`
+		Key    string `json:"key"`
+		Fields Fields `json:"fields"`
 	}
 
 	SearchResponse struct {
 		Paginated
-		Issues []SimplifiedIssue `json:"issues"`
+		Issues []SearchResponseIssue `json:"issues"`
 	}
 
 	GetIssueResponse struct {
@@ -206,7 +208,7 @@ func NewChangelogRequest(issueKey, nextPageToken string) ChangelogRequest {
 
 func NewJQLSearchRequest(jql, nextPageToken string) SearchRequest {
 	return SearchRequest{
-		Fields:     []string{"id"},
+		Fields:     []string{"created", "updated"},
 		JQL:        jql,
 		MaxResults: defaultMaxResults,
 		Paginated: Paginated{
@@ -291,10 +293,15 @@ func (c Changelog) ToDomain() []issue.Changelog {
 	return output
 }
 
-func (s SearchResponse) ToDomain() []string {
-	output := make([]string, len(s.Issues), len(s.Issues))
-	for i, simplifiedIssue := range s.Issues {
-		output[i] = simplifiedIssue.ID
+func (s SearchResponse) ToDomain() []issue.Stamp {
+	output := make([]issue.Stamp, len(s.Issues), len(s.Issues))
+	for i, searchIssueResponse := range s.Issues {
+		output[i] = issue.Stamp{
+			ID:        stringToUint(searchIssueResponse.ID),
+			Key:       searchIssueResponse.Key,
+			CreatedAt: time.Time(searchIssueResponse.Fields.Created),
+			UpdatedAt: time.Time(searchIssueResponse.Fields.Updated),
+		}
 	}
 
 	return output

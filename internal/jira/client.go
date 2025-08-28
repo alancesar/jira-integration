@@ -68,7 +68,7 @@ func NewClient(credentials Credentials, client *http.Client) *Client {
 	}
 }
 
-func (c Client) SearchIssueIDsByJQL(_ context.Context, jql, nextPageToken string) ([]string, string, error) {
+func (c Client) SearchIssuesByJQL(_ context.Context, jql, nextPageToken string) ([]issue.Stamp, string, error) {
 	requestURL := fmt.Sprintf("%s/search/jql", jiraCloudAPIBasePath)
 	params := NewJQLSearchRequest(jql, nextPageToken)
 	rawRequest, err := json.Marshal(&params)
@@ -97,8 +97,8 @@ func (c Client) SearchIssueIDsByJQL(_ context.Context, jql, nextPageToken string
 	return output.ToDomain(), output.NextPageToken, nil
 }
 
-func (c Client) GetIssueByKeyOrID(_ context.Context, issueKeyOrID string) (issue.Issue, error) {
-	parsedURL, err := url.Parse(fmt.Sprintf("%s/issue/%s", jiraCloudAPIBasePath, issueKeyOrID))
+func (c Client) GetIssueByID(_ context.Context, issueID uint) (issue.Issue, error) {
+	parsedURL, err := url.Parse(fmt.Sprintf("%s/issue/%d", jiraCloudAPIBasePath, issueID))
 	if err != nil {
 		return issue.Issue{}, err
 	}
