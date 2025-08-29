@@ -142,7 +142,7 @@ func NewIssue(i issue.Issue) *Issue {
 		Assignee:    assignee,
 		ReporterID:  i.Reporter.ID,
 		Reporter:    *NewAccount(&i.Reporter),
-		StoryPoints: uintToPointer(i.StoryPoints),
+		StoryPoints: i.StoryPoints,
 		Products:    products,
 		FixVersion:  stringToPointer(i.FixVersion),
 		Locality:    stringToPointer(i.Locality),
@@ -209,14 +209,6 @@ func NewAccount(a *issue.Account) *Account {
 
 func stringToPointer(value string) *string {
 	if value == "" {
-		return nil
-	}
-
-	return &value
-}
-
-func uintToPointer(value uint) *uint {
-	if value == 0 {
 		return nil
 	}
 

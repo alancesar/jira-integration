@@ -121,7 +121,7 @@ type (
 		Labels      []string    `json:"labels,omitempty"`
 		Assignee    *Account    `json:"assignee,omitempty"`
 		Reporter    Account     `json:"reporter"`
-		StoryPoints float32     `json:"customfield_10025,omitempty"`
+		StoryPoints *float32    `json:"customfield_10025"`
 		Product     []Field     `json:"customfield_10693,omitempty"`
 		Project     Project     `json:"project"`
 		FixVersions FixVersions `json:"fixVersions,omitempty"`
@@ -231,7 +231,7 @@ func (i Issue) ToDomain() issue.Issue {
 		Project:     i.Fields.Project.Name,
 		Labels:      issue.NewLabels(i.Fields.Labels),
 		Reporter:    i.Fields.Reporter.ToDomain(),
-		StoryPoints: uint(i.Fields.StoryPoints),
+		StoryPoints: floatPointerToUintPointer(i.Fields.StoryPoints),
 		Locality:    i.Fields.Locality.Value,
 		Changelog:   nil,
 	}
@@ -418,4 +418,13 @@ func stringToUint(raw string) uint {
 	}
 
 	return uint(parsed)
+}
+
+func floatPointerToUintPointer(raw *float32) *uint {
+	if raw == nil {
+		return nil
+	}
+
+	parsed := uint(*raw)
+	return &parsed
 }

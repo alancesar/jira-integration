@@ -59,7 +59,7 @@ type (
 		Labels      []Label     `json:"labels,omitempty"`
 		Assignee    *Account    `json:"assignee,omitempty"`
 		Reporter    Account     `json:"reporter"`
-		StoryPoints uint        `json:"story_points,omitempty"`
+		StoryPoints *uint       `json:"story_points,omitempty"`
 		Products    []Product   `json:"products,omitempty"`
 		FixVersion  string      `json:"fix_version,omitempty"`
 		Locality    string      `json:"locality"`
